@@ -7,8 +7,11 @@ import { fileURLToPath } from 'node:url';
 import { db, tx } from './db.js';
 
 const UPLOADS = fileURLToPath(new URL('./uploads/', import.meta.url));
-const ADMIN_EMAIL = 'admin@admin.com';
-const ADMIN_PASS_SHA = createHash('sha256').update('9876').digest(); // only credential that can sign in
+// The only admin credential comes from the environment (or a local .env file, never committed).
+try { process.loadEnvFile(fileURLToPath(new URL('../.env', import.meta.url))); } catch { /* no .env: use real env vars */ }
+const ADMIN_EMAIL = (process.env.ADMIN_EMAIL || '').trim().toLowerCase();
+const ADMIN_PASS_SHA = process.env.ADMIN_PASSWORD ? createHash('sha256').update(process.env.ADMIN_PASSWORD).digest() : null;
+if (!ADMIN_EMAIL || !ADMIN_PASS_SHA) console.warn('[admin] ADMIN_EMAIL and ADMIN_PASSWORD are not set, so admin sign-in is disabled. Copy .env.example to .env.');
 const SESSION_HOURS = 12;
 const COOKIE = 'am_admin';
 
@@ -108,6 +111,7 @@ app.post('/api/admin/login', route((req, res) => {
   const ip = req.socket.remoteAddress || 'local', f = failures.get(ip);
   if (f?.until > Date.now()) throw new HttpError(429, 'Too many attempts. Wait a minute and try again.');
   const fail = () => { const n = (f?.n || 0) + 1; failures.set(ip, { n: n >= 5 ? 0 : n, until: n >= 5 ? Date.now() + 60e3 : 0 }); };
+  if (!ADMIN_PASS_SHA) throw new HttpError(503, 'Admin sign-in isn’t set up on this computer. Add ADMIN_EMAIL and ADMIN_PASSWORD to the .env file.');
   const email = String(req.body?.email || '').trim().toLowerCase();
   const pass = createHash('sha256').update(String(req.body?.password || '')).digest();
   if (email !== ADMIN_EMAIL || !timingSafeEqual(pass, ADMIN_PASS_SHA)) { fail(); throw new HttpError(401, 'That email and password don’t match.'); }

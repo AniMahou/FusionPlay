@@ -17,7 +17,14 @@ For the stall laptop, `npm run preview` builds the site and serves everything fr
 
 ## Admin sign-in
 
-Only `admin@admin.com` with password `9876` can sign in (set in `server/app.js`).
+The one admin account is set on each computer, not in the code. Copy the example file and fill it in:
+
+```bash
+cp .env.example .env
+```
+
+Then set `ADMIN_EMAIL` and `ADMIN_PASSWORD` in `.env` and restart the server. `.env` is git-ignored.
+Without it, admin sign-in is disabled. For hosting, set the same two environment variables instead.
 Sessions last 12 hours. After 5 wrong attempts, sign-in is blocked for one minute.
 
 ## Data
