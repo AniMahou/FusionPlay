@@ -1,0 +1,33 @@
+/* Design tokens: see DESIGN.md */
+:root {
+  --night: #10162A;
+  --panel: rgb(22 28 48 / .84);
+  --panel-solid: #1C2440;
+  --cream: #ECE5D8;
+  --cream-ink: #4A5366;
+  --gold: #D3BC8E;
+  --gold-bright: #F2D69B;
+  --text: #ECE5D8;
+  --text-2: #A9B0C2;
+  --badge: #313131;
+  --wrong: #C9675C;
+  --line: rgb(211 188 142 / .35);
+
+  --t1: #14284A; --t2: #D3BC8E; /* per-page theme tint, set from JS */
+
+  --f-display: "Cinzel", "Times New Roman", serif;
+  --f-ui: "Nunito", "Helvetica Neue", Arial, sans-serif;
+
+  --t-xs: .8125rem; --t-sm: .9375rem; --t-md: 1.0625rem; --t-lg: 1.375rem;
+  --t-xl: clamp(1.75rem, 3.4vw, 2.6rem);
+  --t-2xl: clamp(2.4rem, 6vw, 4.5rem);
+  --t-hero: clamp(3rem, 9vw, 7.5rem);
+
+  --s-1: 4px; --s-2: 8px; --s-3: 12px; --s-4: 16px; --s-5: 24px;
+  --s-6: 32px; --s-7: 48px; --s-8: 72px;
+  --margin: clamp(16px, 4vw, 56px);
+
+  --ease: cubic-bezier(.2, .7, .2, 1);
+  --fast: 180ms; --med: 450ms; --slow: 1100ms;
+}
+@media (prefers-reduced-motion: reduce) { :root { --fast: 0ms; --med: 0ms; --slow: 0ms; } }

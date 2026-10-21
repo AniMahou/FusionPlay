@@ -1,0 +1,448 @@
+[
+  {
+    "event": "voice-anime",
+    "type": "voice",
+    "prompt": "Which anime is this line from?",
+    "clipLength": 6,
+    "options": [
+      "One Piece",
+      "Fairy Tail",
+      "Naruto",
+      "Bleach"
+    ],
+    "answer": 0
+  },
+  {
+    "event": "voice-anime",
+    "type": "voice",
+    "prompt": "Name the show this scene's dialogue comes from.",
+    "clipLength": 6,
+    "options": [
+      "Mob Psycho 100",
+      "Gintama",
+      "One-Punch Man",
+      "Spy x Family"
+    ],
+    "answer": 2
+  },
+  {
+    "event": "voice-anime",
+    "type": "text",
+    "prompt": "Who voices Monkey D. Luffy in Japanese?",
+    "options": [
+      "Mayumi Tanaka",
+      "Junko Takeuchi",
+      "Masako Nozawa",
+      "Megumi Ogata"
+    ],
+    "answer": 0
+  },
+  {
+    "event": "voice-character",
+    "type": "voice",
+    "prompt": "Who is speaking?",
+    "clipLength": 4,
+    "options": [
+      "Tanjiro Kamado",
+      "Zenitsu Agatsuma",
+      "Inosuke Hashibira",
+      "Giyu Tomioka"
+    ],
+    "answer": 1
+  },
+  {
+    "event": "voice-character",
+    "type": "voice",
+    "prompt": "Whose battle cry is this?",
+    "clipLength": 4,
+    "options": [
+      "Kyojuro Rengoku",
+      "Tengen Uzui",
+      "Gyomei Himejima",
+      "Sanemi Shinazugawa"
+    ],
+    "answer": 0
+  },
+  {
+    "event": "voice-character",
+    "type": "voice",
+    "prompt": "Who says this line?",
+    "clipLength": 4,
+    "options": [
+      "Shinobu Kocho",
+      "Mitsuri Kanroji",
+      "Kanao Tsuyuri",
+      "Nezuko Kamado"
+    ],
+    "answer": 0
+  },
+  {
+    "event": "seiyuu",
+    "type": "text",
+    "prompt": "Who voices Naruto Uzumaki in Japanese?",
+    "options": [
+      "Junko Takeuchi",
+      "Mayumi Tanaka",
+      "Chie Nakamura",
+      "Kazuhiko Inoue"
+    ],
+    "answer": 0
+  },
+  {
+    "event": "seiyuu",
+    "type": "text",
+    "prompt": "Noriaki Sugiyama is the Japanese voice of which character?",
+    "options": [
+      "Sasuke Uchiha",
+      "Itachi Uchiha",
+      "Kakashi Hatake",
+      "Neji Hyuga"
+    ],
+    "answer": 0
+  },
+  {
+    "event": "seiyuu",
+    "type": "text",
+    "prompt": "Chie Nakamura voices which member of Team 7?",
+    "options": [
+      "Sakura Haruno",
+      "Hinata Hyuga",
+      "Ino Yamanaka",
+      "Tenten"
+    ],
+    "answer": 0
+  },
+  {
+    "event": "opening",
+    "type": "voice",
+    "prompt": "Which anime does this opening belong to?",
+    "clipLength": 5,
+    "options": [
+      "Attack on Titan",
+      "Vinland Saga",
+      "Fate/Zero",
+      "Tokyo Ghoul"
+    ],
+    "answer": 0
+  },
+  {
+    "event": "opening",
+    "type": "voice",
+    "prompt": "Name the show behind this opening.",
+    "clipLength": 5,
+    "options": [
+      "Naruto Shippuden",
+      "Bleach",
+      "Fairy Tail",
+      "Black Clover"
+    ],
+    "answer": 0
+  },
+  {
+    "event": "opening",
+    "type": "text",
+    "prompt": "Which group performed 'Guren no Yumiya'?",
+    "options": [
+      "Linked Horizon",
+      "LiSA",
+      "Aimer",
+      "Yoasobi"
+    ],
+    "answer": 0
+  },
+  {
+    "event": "scene",
+    "type": "image",
+    "prompt": "Name the film this frame is from.",
+    "hue": 212,
+    "options": [
+      "Your Name",
+      "Weathering with You",
+      "Suzume",
+      "5 Centimeters per Second"
+    ],
+    "answer": 0
+  },
+  {
+    "event": "scene",
+    "type": "image",
+    "prompt": "Which series is this establishing shot from?",
+    "hue": 28,
+    "options": [
+      "Frieren",
+      "Mushishi",
+      "Violet Evergarden",
+      "Natsume's Book of Friends"
+    ],
+    "answer": 0
+  },
+  {
+    "event": "scene",
+    "type": "image",
+    "prompt": "Which film does this skyline belong to?",
+    "hue": 190,
+    "options": [
+      "Akira",
+      "Ghost in the Shell",
+      "Paprika",
+      "Perfect Blue"
+    ],
+    "answer": 1
+  },
+  {
+    "event": "mondstadt",
+    "type": "text",
+    "prompt": "Which Archon watches over Mondstadt?",
+    "options": [
+      "Barbatos",
+      "Morax",
+      "Beelzebul",
+      "Buer"
+    ],
+    "answer": 0
+  },
+  {
+    "event": "mondstadt",
+    "type": "text",
+    "prompt": "Who is the Acting Grand Master of the Knights of Favonius?",
+    "options": [
+      "Jean",
+      "Diluc",
+      "Kaeya",
+      "Lisa"
+    ],
+    "answer": 0
+  },
+  {
+    "event": "mondstadt",
+    "type": "text",
+    "prompt": "Which element is Mondstadt aligned with?",
+    "options": [
+      "Anemo",
+      "Geo",
+      "Hydro",
+      "Cryo"
+    ],
+    "answer": 0
+  },
+  {
+    "event": "liyue",
+    "type": "voice",
+    "prompt": "Whose voice is this?",
+    "clipLength": 5,
+    "options": [
+      "Zhongli",
+      "Xiao",
+      "Childe",
+      "Ganyu"
+    ],
+    "answer": 0
+  },
+  {
+    "event": "liyue",
+    "type": "voice",
+    "prompt": "Which character speaks this line?",
+    "clipLength": 5,
+    "options": [
+      "Hu Tao",
+      "Keqing",
+      "Ningguang",
+      "Yelan"
+    ],
+    "answer": 0
+  },
+  {
+    "event": "liyue",
+    "type": "text",
+    "prompt": "Liyue's Archon is the god of which element?",
+    "options": [
+      "Geo",
+      "Electro",
+      "Pyro",
+      "Anemo"
+    ],
+    "answer": 0
+  },
+  {
+    "event": "inazuma",
+    "type": "text",
+    "prompt": "Who is the Electro Archon?",
+    "options": [
+      "Raiden Shogun",
+      "Yae Miko",
+      "Kujou Sara",
+      "Kamisato Ayaka"
+    ],
+    "answer": 0
+  },
+  {
+    "event": "inazuma",
+    "type": "text",
+    "prompt": "Which decree let the Shogunate confiscate Visions?",
+    "options": [
+      "Vision Hunt Decree",
+      "Sakoku Decree",
+      "Eternity Decree",
+      "Thunder Edict"
+    ],
+    "answer": 0
+  },
+  {
+    "event": "inazuma",
+    "type": "text",
+    "prompt": "What is the name of Inazuma's island-wide isolation policy?",
+    "options": [
+      "Sakoku Decree",
+      "Vision Hunt Decree",
+      "Tenryou Order",
+      "Narukami Seal"
+    ],
+    "answer": 0
+  },
+  {
+    "event": "sumeru",
+    "type": "text",
+    "prompt": "Who is the Dendro Archon?",
+    "options": [
+      "Nahida",
+      "Nilou",
+      "Alhaitham",
+      "Tighnari"
+    ],
+    "answer": 0
+  },
+  {
+    "event": "sumeru",
+    "type": "text",
+    "prompt": "What is Sumeru's great academy called?",
+    "options": [
+      "The Akademiya",
+      "The Grand Library",
+      "The Sanctuary",
+      "The Pardis"
+    ],
+    "answer": 0
+  },
+  {
+    "event": "sumeru",
+    "type": "image",
+    "prompt": "Which region is this landscape from?",
+    "hue": 110,
+    "options": [
+      "Sumeru",
+      "Liyue",
+      "Mondstadt",
+      "Fontaine"
+    ],
+    "answer": 0
+  },
+  {
+    "event": "fontaine",
+    "type": "text",
+    "prompt": "Which character is Fontaine's Hydro Archon on stage?",
+    "options": [
+      "Furina",
+      "Navia",
+      "Clorinde",
+      "Neuvillette"
+    ],
+    "answer": 0
+  },
+  {
+    "event": "fontaine",
+    "type": "text",
+    "prompt": "Fontaine's trials are held in which opera house?",
+    "options": [
+      "Opera Epiclese",
+      "Opera Lumi\u00e8re",
+      "Palais Mermonia",
+      "Court of Fontaine"
+    ],
+    "answer": 0
+  },
+  {
+    "event": "fontaine",
+    "type": "image",
+    "prompt": "Which nation is this harbor from?",
+    "hue": 205,
+    "options": [
+      "Fontaine",
+      "Inazuma",
+      "Liyue",
+      "Snezhnaya"
+    ],
+    "answer": 0
+  },
+  {
+    "event": "star-rail",
+    "type": "text",
+    "prompt": "What is the name of the train the Trailblazer rides?",
+    "options": [
+      "Astral Express",
+      "Galactic Rail",
+      "Herta Express",
+      "Stellaron Line"
+    ],
+    "answer": 0
+  },
+  {
+    "event": "star-rail",
+    "type": "text",
+    "prompt": "Who is the Express's conductor?",
+    "options": [
+      "Pom-Pom",
+      "Himeko",
+      "Welt",
+      "Dan Heng"
+    ],
+    "answer": 0
+  },
+  {
+    "event": "star-rail",
+    "type": "text",
+    "prompt": "Which Path does March 7th first walk?",
+    "options": [
+      "Preservation",
+      "The Hunt",
+      "Erudition",
+      "Harmony"
+    ],
+    "answer": 0
+  },
+  {
+    "event": "lore",
+    "type": "text",
+    "prompt": "Who created Jujutsu Kaisen?",
+    "options": [
+      "Gege Akutami",
+      "Tatsuki Fujimoto",
+      "Koyoharu Gotouge",
+      "Hajime Isayama"
+    ],
+    "answer": 0
+  },
+  {
+    "event": "lore",
+    "type": "text",
+    "prompt": "Which studio animates Jujutsu Kaisen?",
+    "options": [
+      "MAPPA",
+      "ufotable",
+      "Wit Studio",
+      "Bones"
+    ],
+    "answer": 0
+  },
+  {
+    "event": "lore",
+    "type": "text",
+    "prompt": "What is Satoru Gojo's inherited technique called?",
+    "options": [
+      "Limitless",
+      "Ten Shadows",
+      "Cursed Speech",
+      "Boogie Woogie"
+    ],
+    "answer": 0
+  }
+]

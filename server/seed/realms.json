@@ -1,0 +1,20 @@
+[
+  {
+    "id": "anime",
+    "name": "Anime",
+    "blurb": "Voices, openings, scenes and lore from the shows everyone argues about.",
+    "tint": [
+      "#3A2350",
+      "#C0558A"
+    ]
+  },
+  {
+    "id": "hoyoverse",
+    "name": "HoYoverse",
+    "blurb": "Seven nations, one sky. Genshin and Star Rail trivia, nation by nation.",
+    "tint": [
+      "#14284A",
+      "#D3BC8E"
+    ]
+  }
+]

@@ -1,0 +1,242 @@
+[
+  {
+    "id": "voice-anime",
+    "realm": "anime",
+    "name": "Guess the Anime from the Voice",
+    "blurb": "Set sail. Name the show from a single line.",
+    "joined": 42,
+    "format": "voice",
+    "theme": {
+      "name": "One Piece",
+      "scene": "onepiece",
+      "tint": [
+        "#1A4A86",
+        "#FFE6A8"
+      ],
+      "bg": "/media/anime/voice-anime.jpg",
+      "video": "/media/anime/voice-anime.mp4",
+      "bgm": "/media/anime/voice-anime.mp3",
+      "char": "/media/anime/voice-anime-char.webp"
+    }
+  },
+  {
+    "id": "voice-character",
+    "realm": "anime",
+    "name": "Guess the Character from the Voice",
+    "blurb": "Under the wisteria moon, name who is speaking.",
+    "joined": 37,
+    "format": "voice",
+    "theme": {
+      "name": "Demon Slayer",
+      "scene": "demonslayer",
+      "tint": [
+        "#22122F",
+        "#C9A0E8"
+      ],
+      "bg": "/media/anime/voice-character.jpg",
+      "video": "/media/anime/voice-character.mp4",
+      "bgm": "/media/anime/voice-character.mp3",
+      "char": "/media/anime/voice-character-char.webp"
+    }
+  },
+  {
+    "id": "seiyuu",
+    "realm": "anime",
+    "name": "Guess the Seiyuu",
+    "blurb": "Hidden Leaf trivia on the voices behind the ninja.",
+    "joined": 19,
+    "format": "text",
+    "theme": {
+      "name": "Naruto",
+      "scene": "naruto",
+      "tint": [
+        "#3A1A0C",
+        "#F2A85A"
+      ],
+      "bg": "/media/anime/seiyuu.jpg",
+      "video": "/media/anime/seiyuu.mp4",
+      "bgm": "/media/anime/seiyuu.mp3",
+      "char": "/media/anime/seiyuu-char.webp"
+    }
+  },
+  {
+    "id": "opening",
+    "realm": "anime",
+    "name": "Guess the Opening",
+    "blurb": "Beyond the walls: five seconds of an opening.",
+    "joined": 51,
+    "format": "voice",
+    "theme": {
+      "name": "Attack on Titan",
+      "scene": "aot",
+      "tint": [
+        "#2A211A",
+        "#E2B475"
+      ],
+      "bg": "/media/anime/opening.jpg",
+      "video": "/media/anime/opening.mp4",
+      "bgm": "/media/anime/opening.mp3",
+      "char": "/media/anime/opening-char.webp"
+    }
+  },
+  {
+    "id": "scene",
+    "realm": "anime",
+    "name": "Guess the Scene",
+    "blurb": "A comet splits the sky. Name the frame.",
+    "joined": 28,
+    "format": "image",
+    "theme": {
+      "name": "Your Name",
+      "scene": "yourname",
+      "tint": [
+        "#1E1A52",
+        "#F28C6E"
+      ],
+      "bg": "/media/anime/scene.jpg",
+      "video": "/media/anime/scene.mp4",
+      "bgm": "/media/anime/scene.mp3",
+      "char": "/media/anime/scene-char.webp"
+    }
+  },
+  {
+    "id": "lore",
+    "realm": "anime",
+    "name": "Anime Lore",
+    "blurb": "Cursed energy, studios and canon.",
+    "joined": 33,
+    "format": "text",
+    "theme": {
+      "name": "Jujutsu Kaisen",
+      "scene": "jjk",
+      "tint": [
+        "#10102A",
+        "#8A5CFF"
+      ],
+      "bg": "/media/anime/lore.jpg",
+      "video": "/media/anime/lore.mp4",
+      "bgm": "/media/anime/lore.mp3",
+      "char": "/media/anime/lore-char.webp"
+    }
+  },
+  {
+    "id": "mondstadt",
+    "realm": "hoyoverse",
+    "name": "Mondstadt: City of Freedom",
+    "blurb": "Anemo, the Knights of Favonius and a certain bard.",
+    "joined": 24,
+    "format": "text",
+    "theme": {
+      "name": "Mondstadt",
+      "scene": "mondstadt",
+      "tint": [
+        "#3D7EC2",
+        "#EAF4E4"
+      ],
+      "bg": "/media/hoyoverse/mondstadt.jpg",
+      "video": "/media/hoyoverse/mondstadt.mp4",
+      "bgm": "/media/hoyoverse/mondstadt.mp3",
+      "char": "/media/hoyoverse/mondstadt-char.webp"
+    }
+  },
+  {
+    "id": "liyue",
+    "realm": "hoyoverse",
+    "name": "Liyue: Voices of the Harbor",
+    "blurb": "Lanterns over the harbor. Name the speaker.",
+    "joined": 31,
+    "format": "voice",
+    "theme": {
+      "name": "Liyue",
+      "scene": "liyue",
+      "tint": [
+        "#5A2E14",
+        "#F2C27A"
+      ],
+      "bg": "/media/hoyoverse/liyue.jpg",
+      "video": "/media/hoyoverse/liyue.mp4",
+      "bgm": "/media/hoyoverse/liyue.mp3",
+      "char": "/media/hoyoverse/liyue-char.webp"
+    }
+  },
+  {
+    "id": "inazuma",
+    "realm": "hoyoverse",
+    "name": "Inazuma: Eternity",
+    "blurb": "Electro, decrees and the Shogun.",
+    "joined": 22,
+    "format": "text",
+    "theme": {
+      "name": "Inazuma",
+      "scene": "inazuma",
+      "tint": [
+        "#24123E",
+        "#B58BE6"
+      ],
+      "bg": "/media/hoyoverse/inazuma.jpg",
+      "video": "/media/hoyoverse/inazuma.mp4",
+      "bgm": "/media/hoyoverse/inazuma.mp3",
+      "char": "/media/hoyoverse/inazuma-char.webp"
+    }
+  },
+  {
+    "id": "sumeru",
+    "realm": "hoyoverse",
+    "name": "Sumeru: Wisdom",
+    "blurb": "Dendro, the Akademiya and the rainforest.",
+    "joined": 17,
+    "format": "image",
+    "theme": {
+      "name": "Sumeru",
+      "scene": "sumeru",
+      "tint": [
+        "#16361F",
+        "#A6D46A"
+      ],
+      "bg": "/media/hoyoverse/sumeru.jpg",
+      "video": "/media/hoyoverse/sumeru.mp4",
+      "bgm": "/media/hoyoverse/sumeru.mp3",
+      "char": "/media/hoyoverse/sumeru-char.webp"
+    }
+  },
+  {
+    "id": "fontaine",
+    "realm": "hoyoverse",
+    "name": "Fontaine: Justice",
+    "blurb": "Hydro, the court and its grand opera.",
+    "joined": 15,
+    "format": "image",
+    "theme": {
+      "name": "Fontaine",
+      "scene": "fontaine",
+      "tint": [
+        "#1E3A5C",
+        "#BFE3F5"
+      ],
+      "bg": "/media/hoyoverse/fontaine.jpg",
+      "video": "/media/hoyoverse/fontaine.mp4",
+      "bgm": "/media/hoyoverse/fontaine.mp3",
+      "char": "/media/hoyoverse/fontaine-char.webp"
+    }
+  },
+  {
+    "id": "star-rail",
+    "realm": "hoyoverse",
+    "name": "Star Rail: The Express",
+    "blurb": "All aboard. Trivia from across the stars.",
+    "joined": 29,
+    "format": "text",
+    "theme": {
+      "name": "Astral Express",
+      "scene": "starrail",
+      "tint": [
+        "#0E0E26",
+        "#E8C77A"
+      ],
+      "bg": "/media/hoyoverse/star-rail.jpg",
+      "video": "/media/hoyoverse/star-rail.mp4",
+      "bgm": "/media/hoyoverse/star-rail.mp3",
+      "char": "/media/hoyoverse/star-rail-char.webp"
+    }
+  }
+]
