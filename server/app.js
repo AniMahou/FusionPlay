@@ -108,7 +108,9 @@ function requireAdmin(req, res, next) {
 // A 4-digit password is easy to guess, so slow down repeated failures.
 const failures = new Map(); // ip -> { n, until }
 app.post('/api/admin/login', route((req, res) => {
-  const ip = req.socket.remoteAddress || 'local', f = failures.get(ip);
+  // Behind Cloudflare Tunnel every request arrives from this machine; the real visitor is in CF-Connecting-IP.
+  const local = /^(::1|127\.|::ffff:127\.)/.test(req.socket.remoteAddress || '');
+  const ip = (local && req.headers['cf-connecting-ip']) || req.socket.remoteAddress || 'local', f = failures.get(ip);
   if (f?.until > Date.now()) throw new HttpError(429, 'Too many attempts. Wait a minute and try again.');
   const fail = () => { const n = (f?.n || 0) + 1; failures.set(ip, { n: n >= 5 ? 0 : n, until: n >= 5 ? Date.now() + 60e3 : 0 }); };
   if (!ADMIN_PASS_SHA) throw new HttpError(503, 'Admin sign-in isn’t set up on this computer. Add ADMIN_EMAIL and ADMIN_PASSWORD to the .env file.');

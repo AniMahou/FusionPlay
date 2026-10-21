@@ -15,6 +15,16 @@ npm run dev
 `npm run dev` starts one process: Vite serves the pages, and the API (`server/app.js`) runs inside it.
 For the stall laptop, `npm run preview` builds the site and serves everything from `server/index.js`.
 
+## Share a public link (Cloudflare quick tunnel)
+
+```bash
+brew install cloudflared   # once
+npm run share
+```
+
+This builds the site, serves it on port 8080, and prints a public `https://….trycloudflare.com` link for the kiosk and admin.
+The link works while that terminal stays open and the laptop is awake. It changes every time you run the command.
+
 ## Admin sign-in
 
 The one admin account is set on each computer, not in the code. Copy the example file and fill it in:
