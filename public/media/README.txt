@@ -2,8 +2,8 @@ Optional media. Every page already has a live, code-drawn scene (src/scenes.js).
 Files you add here are layered on top: a video or image covers the scene, music plays.
 
 home/bg.mp4, home/bg.jpg, home/bgm.mp3          home page
-anime/realm.mp4 or realm.jpg                    Anime event list page
-hoyoverse/realm.mp4 or realm.jpg                HoYoverse event list page
+anime/realm.mp4 or realm.jpg, realm.mp3          Anime event list page (video/image, music)
+hoyoverse/realm.mp4 or realm.jpg, realm.mp3      HoYoverse event list page (video/image, music)
 
 <realm>/<event-id>.mp4      live wallpaper for that event (muted loop)
 <realm>/<event-id>.jpg      still background (used if no video)

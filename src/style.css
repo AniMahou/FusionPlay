@@ -269,3 +269,7 @@ form { display: grid; gap: var(--s-4); }
 .options.pics .opt { height: 100%; border-radius: 10px; }
 .options.pics .opt:not(.has-img) { justify-content: center; flex-direction: column; align-items: flex-start; }
 .opt.has-img img { aspect-ratio: 16 / 10; max-height: 170px; }
+
+/* Live wallpaper videos are busier than the drawn scenes: deepen the veil while one plays. */
+.bg-veil { transition: background var(--slow) var(--ease); }
+.bg-video.on + .bg-veil { background: linear-gradient(90deg, rgb(10 14 28 / .78), rgb(10 14 28 / .35) 50%, rgb(10 14 28 / .2) 80%), linear-gradient(180deg, rgb(10 14 28 / .45), transparent 30%, rgb(10 14 28 / .65)); }

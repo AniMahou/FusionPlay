@@ -39,7 +39,7 @@ function setTheme({ scene, tint, bg, video }) {
   if (video && !reduce.matches) {
     bgVideo.oncanplay = () => { if (token !== bgToken) return; bgVideo.classList.add('on'); bgVideo.play().catch(() => {}); };
     bgVideo.onerror = () => bgVideo.classList.remove('on');
-    if (!bgVideo.src.endsWith(video)) bgVideo.src = video; else bgVideo.oncanplay();
+    if (!bgVideo.src.endsWith(video)) { bgVideo.src = video; bgVideo.load(); } else if (bgVideo.readyState >= 3) bgVideo.oncanplay();
   }
 }
 const preload = (src, cb) => { const im = new Image(); im.onload = () => cb(src); im.src = src; };
@@ -163,7 +163,7 @@ function realmPage(id) {
   const realm = realms.find((r) => r.id === id);
   if (!realm) return missing();
   setTheme({ scene: `realm-${realm.id}`, tint: realm.tint, video: `/media/${realm.id}/realm.mp4`, bg: `/media/${realm.id}/realm.jpg` });
-  setMusic(HOME_THEME.bgm, 'Main theme');
+  setMusic(`/media/${realm.id}/realm.mp3`, `${realm.name} theme`);
   const list = events.filter((e) => e.realm === id);
   app.innerHTML = `
     <section class="screen">

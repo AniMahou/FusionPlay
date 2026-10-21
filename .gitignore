@@ -6,3 +6,6 @@ server/uploads/*
 .DS_Store
 .claude/
 .env
+public/media/**
+!public/media/README.txt
+marketing/
