@@ -273,3 +273,53 @@ form { display: grid; gap: var(--s-4); }
 /* Live wallpaper videos are busier than the drawn scenes: deepen the veil while one plays. */
 .bg-veil { transition: background var(--slow) var(--ease); }
 .bg-video.on + .bg-veil { background: linear-gradient(90deg, rgb(10 14 28 / .78), rgb(10 14 28 / .35) 50%, rgb(10 14 28 / .2) 80%), linear-gradient(180deg, rgb(10 14 28 / .45), transparent 30%, rgb(10 14 28 / .65)); }
+
+/* ===================== v5: wallpaper-led design ===================== */
+/* Solid type only: no gradient fills on text. */
+.gold-text { background: none; -webkit-background-clip: border-box; background-clip: border-box; color: var(--gold-bright); }
+/* The drawn scene is a fallback: it steps back once a real wallpaper shows. */
+.scene-host { transition: opacity var(--slow) var(--ease); }
+body.wallpaper .scene-host { opacity: 0; }
+body.wallpaper .bg-img.on { transform: none; }
+/* Panels: one quiet frosted surface, no ornaments. */
+.panel { background: rgb(12 14 24 / .6); backdrop-filter: blur(18px) saturate(140%); -webkit-backdrop-filter: blur(18px) saturate(140%);
+  border: 1px solid rgb(255 255 255 / .12); border-radius: 16px; box-shadow: 0 30px 80px -30px rgb(0 0 0 / .85); }
+.panel::before, .panel::after { display: none; }
+.rule { background: rgb(255 255 255 / .12); opacity: 1; }
+
+/* Realm page heading over the wallpaper */
+.page-head h1 { color: #fff; text-shadow: 0 2px 30px rgb(0 0 0 / .55); }
+
+/* Event cards are wallpaper posters; a muted preview plays on hover. */
+.events { grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr)); gap: var(--s-4); }
+.event { min-height: 0; aspect-ratio: 16 / 10; border-radius: 14px; padding: var(--s-5);
+  box-shadow: 0 0 0 1px rgb(255 255 255 / .1), 0 24px 50px -24px rgb(0 0 0 / .9); }
+.event:hover { transform: translateY(-3px); box-shadow: 0 0 0 1.5px var(--gold-bright), 0 30px 60px -24px rgb(0 0 0 / .95); }
+.event::after { background: linear-gradient(180deg, rgb(8 10 18 / 0) 35%, rgb(8 10 18 / .9) 100%); }
+.event .seal { display: none; }
+.event .preview { position: absolute; inset: 0; z-index: -2; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity .5s var(--ease); }
+.event .preview.on { opacity: 1; }
+.event h2 { font-size: 1.5rem; }
+.event p { overflow: hidden; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; }
+.event .meta { border-top: 0; padding-top: 0; }
+
+/* Event page: cinematic, title anchored bottom-left over the wallpaper */
+.event-page { align-items: end; padding-bottom: var(--s-6); }
+.event-intro .theme-name { font-weight: 600; font-size: clamp(3rem, 7vw, 7rem); color: #fff; text-shadow: 0 2px 40px rgb(0 0 0 / .55); }
+.event-intro h1 { font-family: var(--f-ui); font-weight: 800; font-size: var(--t-lg); letter-spacing: .01em; }
+.event-intro .eyebrow-star { color: rgb(255 255 255 / .8); }
+.facts li { background: rgb(12 14 24 / .5); border-color: rgb(255 255 255 / .14); backdrop-filter: blur(10px); }
+.register h2 { color: #fff; }
+
+/* Quiz and result keep the wallpaper visible around a frosted panel */
+.quiz.panel, .result.panel { background: rgb(12 14 24 / .7); }
+@media (prefers-reduced-motion: reduce) { .event .preview { display: none; } }
+/* Home realm cards show their section's wallpaper */
+.realm { isolation: isolate; }
+.realm-art, .realm .preview { position: absolute; inset: 0; z-index: -2; width: 100%; height: 100%; object-fit: cover; background: center / cover no-repeat; }
+.realm .preview { opacity: 0; transition: opacity .5s var(--ease); }
+.realm .preview.on { opacity: 1; }
+.realm::after { content: ""; position: absolute; inset: 0; z-index: -1; background: linear-gradient(180deg, rgb(8 10 18 / .05) 20%, rgb(8 10 18 / .88) 100%); }
+.realm .sigil { display: none; }
+.realm { border-radius: 16px; min-height: 300px; }
+@media (prefers-reduced-motion: reduce) { .realm .preview { display: none; } }

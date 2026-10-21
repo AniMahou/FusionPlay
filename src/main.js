@@ -34,10 +34,12 @@ function setTheme({ scene, tint, bg, video }) {
   root.setProperty('--t1', tint[0]); root.setProperty('--t2', tint[1]);
   const token = ++bgToken;
   bgImg.classList.remove('on');
-  if (bg) { const im = new Image(); im.onload = () => { if (token !== bgToken) return; bgImg.style.backgroundImage = `url("${bg}")`; bgImg.classList.add('on'); }; im.src = bg; }
+  document.body.classList.remove('wallpaper');
+  const showing = () => { if (token === bgToken) document.body.classList.add('wallpaper'); };
+  if (bg) { const im = new Image(); im.onload = () => { if (token !== bgToken) return; bgImg.style.backgroundImage = `url("${bg}")`; bgImg.classList.add('on'); showing(); }; im.src = bg; }
   bgVideo.classList.remove('on'); bgVideo.pause();
   if (video && !reduce.matches) {
-    bgVideo.oncanplay = () => { if (token !== bgToken) return; bgVideo.classList.add('on'); bgVideo.play().catch(() => {}); };
+    bgVideo.oncanplay = () => { if (token !== bgToken) return; bgVideo.classList.add('on'); showing(); bgVideo.play().catch(() => {}); };
     bgVideo.onerror = () => bgVideo.classList.remove('on');
     if (!bgVideo.src.endsWith(video)) { bgVideo.src = video; bgVideo.load(); } else if (bgVideo.readyState >= 3) bgVideo.oncanplay();
   }
@@ -46,16 +48,20 @@ const preload = (src, cb) => { const im = new Image(); im.onload = () => cb(src)
 
 /* ---------- Music: one looping track per page, user can mute ---------- */
 const audio = document.getElementById('bgm'), nowPlaying = document.getElementById('now-playing'), musicBtn = document.getElementById('btn-music');
-let musicOn = true, trackLabel = '';
-function setMusic(src, label) {
-  trackLabel = label;
+let musicOn = true, trackLabel = '', fallback = null;
+// `alt` is tried when `src` is missing (an event without its own track uses its section's music).
+function setMusic(src, label, alt = null) {
+  trackLabel = label; fallback = alt;
   if (audio.getAttribute('src') === src) { if (musicOn) audio.play().catch(() => {}); return; }
   nowPlaying.hidden = true;
   audio.setAttribute('src', src);
   if (musicOn) audio.play().catch(() => {});
 }
 audio.addEventListener('playing', () => { nowPlaying.textContent = `♪ ${trackLabel}`; nowPlaying.hidden = false; });
-audio.addEventListener('error', () => { nowPlaying.hidden = true; });
+audio.addEventListener('error', () => {
+  nowPlaying.hidden = true;
+  if (fallback) { const f = fallback; fallback = null; trackLabel = f.label; audio.setAttribute('src', f.src); if (musicOn) audio.play().catch(() => {}); }
+});
 musicBtn.addEventListener('click', () => {
   musicOn = !musicOn;
   musicBtn.setAttribute('aria-pressed', musicOn); musicBtn.setAttribute('aria-label', musicOn ? 'Turn music off' : 'Turn music on');
@@ -123,6 +129,8 @@ function home() {
       <div class="realms">
         ${realms.map((r, i) => `
           <button class="realm" data-id="${r.id}" style="--r1:${r.tint[0]};--r2:${r.tint[1]};--d:${900 + i * 150}ms">
+            <span class="realm-art" style="background-image:url('/media/${r.id}/realm.jpg')"></span>
+            <video class="preview" muted loop playsinline preload="none" data-src="/media/${r.id}/realm.mp4"></video>
             <svg class="sigil"><use href="#i-${realmIcon[r.id]}"/></svg>
             <span class="count">${icon('star')} ${events.filter((e) => e.realm === r.id).length} events</span>
             <h2 class="display">${esc(r.name)}</h2>
@@ -133,6 +141,13 @@ function home() {
       <div class="home-foot"><span class="tap-hint">Tap a realm to enter</span><span class="ver">Stall 14, Hall B &nbsp; Ver. 1.0 &nbsp; <a class="admin-link" href="/admin.html">Admin</a></span></div>
     </section>`;
   app.querySelectorAll('.realm').forEach((b) => b.addEventListener('click', () => { location.hash = `#/realm/${b.dataset.id}`; }));
+  if (!reduce.matches) app.querySelectorAll('.realm').forEach((card) => {
+    const v = card.querySelector('.preview');
+    const start = () => { if (!v.src) v.src = v.dataset.src; v.play().then(() => v.classList.add('on')).catch(() => {}); };
+    const end = () => { v.classList.remove('on'); v.pause(); };
+    card.addEventListener('pointerenter', start); card.addEventListener('focus', start);
+    card.addEventListener('pointerleave', end); card.addEventListener('blur', end);
+  });
   mountEmblem(app.querySelector('#emblem'));
 }
 
@@ -176,6 +191,7 @@ function realmPage(id) {
         ${list.map((e, i) => `
           <button class="event" data-id="${e.id}" style="--e1:${e.theme.tint[0]};--e2:${e.theme.tint[1]};--d:${i * 70}ms">
             <span class="art" data-bg="${esc(e.theme.bg)}">${sceneThumb(e.theme.scene)}</span>
+            <video class="preview" muted loop playsinline preload="none" data-src="${esc(e.theme.video)}"></video>
             <svg class="seal"><use href="#i-${realm.id === 'anime' ? 'wish' : 'gem'}"/></svg>
             <span class="theme">${icon('star')} ${esc(e.theme.name)}</span>
             <h2>${esc(e.name)}</h2>
@@ -186,6 +202,14 @@ function realmPage(id) {
     </section>`;
   app.querySelectorAll('.art').forEach((a) => preload(a.dataset.bg, (src) => { a.style.backgroundImage = `linear-gradient(transparent, transparent), url("${src}")`; a.classList.add('has-img'); }));
   app.querySelectorAll('.event').forEach((b) => b.addEventListener('click', () => { location.hash = `#/event/${b.dataset.id}`; }));
+  // A muted preview of the event's wallpaper plays while the card is hovered or focused.
+  if (!reduce.matches) app.querySelectorAll('.event').forEach((card) => {
+    const v = card.querySelector('.preview');
+    const start = () => { if (!card.querySelector('.art.has-img')) return; if (!v.src) v.src = v.dataset.src; v.play().then(() => v.classList.add('on')).catch(() => {}); };
+    const end = () => { v.classList.remove('on'); v.pause(); };
+    card.addEventListener('pointerenter', start); card.addEventListener('focus', start);
+    card.addEventListener('pointerleave', end); card.addEventListener('blur', end);
+  });
 }
 
 /* ---------- 3. Event page: themed intro + registration ---------- */
@@ -193,7 +217,7 @@ function eventPage(id) {
   const ev = events.find((e) => e.id === id);
   if (!ev) return missing();
   setTheme(ev.theme);
-  setMusic(ev.theme.bgm, `${ev.theme.name} theme`);
+  setMusic(ev.theme.bgm, `${ev.theme.name} theme`, { src: `/media/${ev.realm}/realm.mp3`, label: `${realms.find((r) => r.id === ev.realm)?.name || ''} theme` });
   const realm = realms.find((r) => r.id === ev.realm);
   app.innerHTML = `
     <a class="btn btn-ghost btn-sm screen" href="#/realm/${realm.id}"><span class="badge">${icon('back')}</span>${esc(realm.name)} events</a>
@@ -249,7 +273,7 @@ function quiz(id) {
   if (!session || session.event.id !== id) { location.hash = `#/event/${id}`; return; }
   const { event: ev, questions: set, playId, player } = session;
   setTheme(ev.theme);
-  setMusic(ev.theme.bgm, `${ev.theme.name} theme`);
+  setMusic(ev.theme.bgm, `${ev.theme.name} theme`, { src: `/media/${ev.realm}/realm.mp3`, label: `${realms.find((r) => r.id === ev.realm)?.name || ''} theme` });
   let i = 0, score = 0, timers = [], onKey = null, clip = null;
   const stop = () => { timers.forEach(clearInterval); timers = []; if (onKey) removeEventListener('keydown', onKey); onKey = null; clip?.pause(); };
   cleanup = stop;

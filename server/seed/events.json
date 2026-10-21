@@ -43,15 +43,15 @@
     "id": "seiyuu",
     "realm": "anime",
     "name": "Guess the Seiyuu",
-    "blurb": "Hidden Leaf trivia on the voices behind the ninja.",
+    "blurb": "Rem, Emilia and the voices behind them.",
     "joined": 19,
     "format": "text",
     "theme": {
-      "name": "Naruto",
-      "scene": "naruto",
+      "name": "Re:Zero",
+      "scene": "yourname",
       "tint": [
-        "#3A1A0C",
-        "#F2A85A"
+        "#16203C",
+        "#8FB8F0"
       ],
       "bg": "/media/anime/seiyuu.jpg",
       "video": "/media/anime/seiyuu.mp4",
@@ -103,15 +103,15 @@
     "id": "lore",
     "realm": "anime",
     "name": "Anime Lore",
-    "blurb": "Cursed energy, studios and canon.",
+    "blurb": "Magic, elves and a thousand-year journey.",
     "joined": 33,
     "format": "text",
     "theme": {
-      "name": "Jujutsu Kaisen",
-      "scene": "jjk",
+      "name": "Frieren",
+      "scene": "mondstadt",
       "tint": [
-        "#10102A",
-        "#8A5CFF"
+        "#1C2A2A",
+        "#CFE3D8"
       ],
       "bg": "/media/anime/lore.jpg",
       "video": "/media/anime/lore.mp4",
@@ -222,16 +222,16 @@
   {
     "id": "star-rail",
     "realm": "hoyoverse",
-    "name": "Star Rail: The Express",
-    "blurb": "All aboard. Trivia from across the stars.",
+    "name": "Natlan: Land of Fire",
+    "blurb": "Pyro, the tribes and the Night Kingdom.",
     "joined": 29,
     "format": "text",
     "theme": {
-      "name": "Astral Express",
-      "scene": "starrail",
+      "name": "Natlan",
+      "scene": "liyue",
       "tint": [
-        "#0E0E26",
-        "#E8C77A"
+        "#2A1410",
+        "#F08A4B"
       ],
       "bg": "/media/hoyoverse/star-rail.jpg",
       "video": "/media/hoyoverse/star-rail.mp4",

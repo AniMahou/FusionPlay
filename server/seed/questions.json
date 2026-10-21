@@ -77,42 +77,6 @@
     "answer": 0
   },
   {
-    "event": "seiyuu",
-    "type": "text",
-    "prompt": "Who voices Naruto Uzumaki in Japanese?",
-    "options": [
-      "Junko Takeuchi",
-      "Mayumi Tanaka",
-      "Chie Nakamura",
-      "Kazuhiko Inoue"
-    ],
-    "answer": 0
-  },
-  {
-    "event": "seiyuu",
-    "type": "text",
-    "prompt": "Noriaki Sugiyama is the Japanese voice of which character?",
-    "options": [
-      "Sasuke Uchiha",
-      "Itachi Uchiha",
-      "Kakashi Hatake",
-      "Neji Hyuga"
-    ],
-    "answer": 0
-  },
-  {
-    "event": "seiyuu",
-    "type": "text",
-    "prompt": "Chie Nakamura voices which member of Team 7?",
-    "options": [
-      "Sakura Haruno",
-      "Hinata Hyuga",
-      "Ino Yamanaka",
-      "Tenten"
-    ],
-    "answer": 0
-  },
-  {
     "event": "opening",
     "type": "voice",
     "prompt": "Which anime does this opening belong to?",
@@ -354,7 +318,7 @@
     "prompt": "Fontaine's trials are held in which opera house?",
     "options": [
       "Opera Epiclese",
-      "Opera Lumi\u00e8re",
+      "Opera Lumière",
       "Palais Mermonia",
       "Court of Fontaine"
     ],
@@ -374,74 +338,110 @@
     "answer": 0
   },
   {
-    "event": "star-rail",
+    "event": "seiyuu",
     "type": "text",
-    "prompt": "What is the name of the train the Trailblazer rides?",
+    "prompt": "Who voices Rem in Japanese?",
     "options": [
-      "Astral Express",
-      "Galactic Rail",
-      "Herta Express",
-      "Stellaron Line"
+      "Inori Minase",
+      "Rie Takahashi",
+      "Yui Ishikawa",
+      "Kana Hanazawa"
     ],
     "answer": 0
   },
   {
-    "event": "star-rail",
+    "event": "seiyuu",
     "type": "text",
-    "prompt": "Who is the Express's conductor?",
+    "prompt": "Rie Takahashi is the Japanese voice of which Re:Zero character?",
     "options": [
-      "Pom-Pom",
-      "Himeko",
-      "Welt",
-      "Dan Heng"
+      "Emilia",
+      "Ram",
+      "Beatrice",
+      "Felt"
     ],
     "answer": 0
   },
   {
-    "event": "star-rail",
+    "event": "seiyuu",
     "type": "text",
-    "prompt": "Which Path does March 7th first walk?",
+    "prompt": "Who voices Subaru Natsuki in Japanese?",
     "options": [
-      "Preservation",
-      "The Hunt",
-      "Erudition",
-      "Harmony"
-    ],
-    "answer": 0
-  },
-  {
-    "event": "lore",
-    "type": "text",
-    "prompt": "Who created Jujutsu Kaisen?",
-    "options": [
-      "Gege Akutami",
-      "Tatsuki Fujimoto",
-      "Koyoharu Gotouge",
-      "Hajime Isayama"
+      "Yusuke Kobayashi",
+      "Natsuki Hanae",
+      "Yuki Kaji",
+      "Daisuke Ono"
     ],
     "answer": 0
   },
   {
     "event": "lore",
     "type": "text",
-    "prompt": "Which studio animates Jujutsu Kaisen?",
+    "prompt": "Which studio animates Frieren: Beyond Journey's End?",
     "options": [
+      "Madhouse",
       "MAPPA",
-      "ufotable",
       "Wit Studio",
-      "Bones"
+      "ufotable"
     ],
     "answer": 0
   },
   {
     "event": "lore",
     "type": "text",
-    "prompt": "What is Satoru Gojo's inherited technique called?",
+    "prompt": "What is Frieren?",
     "options": [
-      "Limitless",
-      "Ten Shadows",
-      "Cursed Speech",
-      "Boogie Woogie"
+      "An elf",
+      "A dwarf",
+      "A demon",
+      "A human mage"
+    ],
+    "answer": 0
+  },
+  {
+    "event": "lore",
+    "type": "text",
+    "prompt": "Who was the hero of Frieren's original party?",
+    "options": [
+      "Himmel",
+      "Heiter",
+      "Eisen",
+      "Stark"
+    ],
+    "answer": 0
+  },
+  {
+    "event": "star-rail",
+    "type": "text",
+    "prompt": "Who is Natlan's Pyro Archon?",
+    "options": [
+      "Mavuika",
+      "Xilonen",
+      "Citlali",
+      "Chasca"
+    ],
+    "answer": 0
+  },
+  {
+    "event": "star-rail",
+    "type": "text",
+    "prompt": "Mualani is a guide from which Natlan tribe?",
+    "options": [
+      "People of the Springs",
+      "Scions of the Canopy",
+      "Children of Echoes",
+      "Collective of Plenty"
+    ],
+    "answer": 0
+  },
+  {
+    "event": "star-rail",
+    "type": "text",
+    "prompt": "Kinich belongs to which tribe?",
+    "options": [
+      "Scions of the Canopy",
+      "People of the Springs",
+      "Masters of the Night-Wind",
+      "Flower-Feather Clan"
     ],
     "answer": 0
   }
