@@ -323,3 +323,51 @@ body.wallpaper .bg-img.on { transform: none; }
 .realm .sigil { display: none; }
 .realm { border-radius: 16px; min-height: 300px; }
 @media (prefers-reduced-motion: reduce) { .realm .preview { display: none; } }
+
+/* ===================== Anime Shiritori ===================== */
+:root { --p1: #F28BB0; --p2: #6FD3C6; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+.shiri-rules { display: grid; gap: var(--s-2); padding-left: 1.3em; max-width: 46ch; text-shadow: 0 1px 8px rgb(0 0 0 / .7); }
+.shiri-rules li::marker { color: var(--gold-bright); font-family: var(--f-display); }
+.shiri-seat { display: grid; gap: var(--s-3); padding: var(--s-4); border-radius: 12px; background: rgb(255 255 255 / .04); border: 1px solid rgb(255 255 255 / .08); }
+.seat-tag { justify-self: start; font-size: var(--t-xs); font-weight: 800; letter-spacing: .04em; padding: 2px 10px; border-radius: 999px; color: #10162A; }
+.seat-tag.p1 { background: var(--p1); } .seat-tag.p2 { background: var(--p2); }
+
+.shiri { max-width: 1040px; margin: 0 auto; display: grid; gap: var(--s-5); }
+.shiri-players { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s-4); }
+.shiri-player { display: grid; gap: 4px; padding: var(--s-4) var(--s-5); border-radius: 14px; background: rgb(12 14 24 / .6); backdrop-filter: blur(14px);
+  border: 1px solid rgb(255 255 255 / .1); transition: border-color var(--med) var(--ease), box-shadow var(--med) var(--ease), opacity var(--med); opacity: .6; }
+.shiri-player .pname { font-family: var(--f-display); font-size: var(--t-xl); line-height: 1.1; color: #fff; }
+.shiri-player .pwords { color: var(--text-2); font-size: var(--t-sm); }
+.shiri-player.active { opacity: 1; }
+.shiri-player.p1.active { border-color: var(--p1); box-shadow: 0 0 0 1px var(--p1), 0 0 40px -12px var(--p1); }
+.shiri-player.p2.active { border-color: var(--p2); box-shadow: 0 0 0 1px var(--p2), 0 0 40px -12px var(--p2); }
+.shiri-player.p2 { text-align: right; } .shiri-player.p2 .seat-tag { justify-self: end; }
+
+.shiri-core { display: grid; gap: var(--s-4); }
+.shiri-letter { display: flex; align-items: baseline; justify-content: center; gap: var(--s-4); }
+.shiri-letter b { font-family: var(--f-display); font-size: clamp(4rem, 10vw, 7rem); line-height: 1; color: #fff; }
+.shiri-core[data-seat="0"] .shiri-letter b { color: var(--p1); }
+.shiri-core[data-seat="1"] .shiri-letter b { color: var(--p2); }
+.shiri-input { display: grid; grid-template-columns: 1fr auto; gap: var(--s-3); }
+.shiri-input input { min-width: 0; font-size: var(--t-lg); padding: var(--s-3) var(--s-4); border-radius: 999px; background: rgb(10 14 28 / .6);
+  border: 1px solid rgb(255 255 255 / .18); color: #fff; }
+.shiri-input input:focus { outline: none; border-color: var(--gold-bright); box-shadow: 0 0 0 3px rgb(242 214 155 / .2); }
+.shiri-msg { min-height: 1.6em; text-align: center; font-weight: 700; }
+.shiri-msg.good { color: #9BE3B0; } .shiri-msg.bad { color: #F0A49A; }
+.shiri-choose { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: var(--s-3); }
+.shiri-choose p { grid-column: 1 / -1; text-align: center; color: var(--text-2); }
+.shiri-choose button { display: grid; gap: 2px; text-align: left; padding: var(--s-3) var(--s-4); border-radius: 12px; cursor: pointer; color: #fff;
+  background: rgb(255 255 255 / .06); border: 1px solid rgb(255 255 255 / .16); transition: border-color var(--fast), background var(--fast); }
+.shiri-choose button:hover { border-color: var(--gold-bright); background: rgb(255 255 255 / .1); }
+.shiri-choose small, .shiri-chain small { color: var(--text-2); font-size: var(--t-xs); }
+.shiri-actions { display: flex; justify-content: center; gap: var(--s-5); }
+.shiri-actions .link { color: var(--text-2); }
+
+.shiri-chain { list-style: none; padding: 0; display: flex; flex-wrap: wrap; gap: var(--s-2); }
+.shiri-chain li { display: grid; padding: var(--s-2) var(--s-4); border-radius: 12px; background: rgb(12 14 24 / .6); backdrop-filter: blur(10px); border-left: 3px solid; }
+.shiri-chain li.p1 { border-color: var(--p1); } .shiri-chain li.p2 { border-color: var(--p2); }
+.shiri-chain li:first-child { box-shadow: 0 0 0 1px rgb(255 255 255 / .25); }
+.shiri-host { width: min(460px, 100%); display: grid; gap: var(--s-4); }
+.shiri-host .field input { background: rgb(10 14 28 / .55); border: 1px solid rgb(211 188 142 / .35); border-radius: 4px; padding: var(--s-3) var(--s-4); color: var(--cream); }
+@media (max-width: 640px) { .shiri-input { grid-template-columns: 1fr; } }

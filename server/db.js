@@ -97,3 +97,12 @@ if (!db.prepare('SELECT COUNT(*) n FROM events').get().n) {
   });
   console.log('[db] seeded from server/seed');
 }
+
+/* ---------- Migrations (safe to run on every start) ---------- */
+const eventCols = db.prepare('PRAGMA table_info(events)').all().map((c) => c.name);
+if (!eventCols.includes('kind')) db.exec("ALTER TABLE events ADD COLUMN kind TEXT NOT NULL DEFAULT 'quiz'");
+// Anime Shiritori: a 1v1 word-chain event that needs no questions.
+if (!db.prepare("SELECT 1 FROM events WHERE id = 'shiritori'").get()) {
+  db.prepare(`INSERT INTO events (id, realm_id, name, blurb, theme_name, scene, tint1, tint2, time_limit, kind, sort)
+    VALUES ('shiritori', 'anime', 'Anime Shiritori', '1v1. Name a character or anime that starts with the last letter.', 'Shiritori', 'realm-anime', '#1A1030', '#F4B6C6', 20, 'shiritori', -1)`).run();
+}

@@ -20,7 +20,10 @@ export async function eventEditorView(view, id) {
           <a class="btn btn-secondary" href="#/leaderboards?event=${esc(ev.id)}">${ic('trophy')}Leaderboard</a>
         </div>
       </div>
-      <section class="card">
+      ${ev.kind === 'shiritori' ? `<section class="card card-pad">
+        <h2 style="font:600 17px var(--font-display)">How Anime Shiritori works</h2>
+        <p class="muted" style="margin-top:6px;max-width:70ch">Two players take turns naming an anime character or title that starts with the last letter of the previous answer. Answers are checked against a built-in index of popular anime and characters, so there are no questions to write. Use <b>Settings</b> to change the seconds per turn. Hosts can accept unknown answers with the PIN in the server's <code>.env</code> file (<code>HOST_PIN</code>). Players get 100 points per word and the winner gets 300 more, shown on the Leaderboard.</p>
+      </section>` : `      <section class="card">
         <div class="card-pad" style="display:flex;justify-content:space-between;align-items:center;gap:12px;border-bottom:1px solid var(--sep-soft)">
           <div><h2 style="font:600 17px var(--font-display)">Questions</h2><span class="muted small">Players see them in this order. ${ev.questions.length ? '' : 'Add at least one to show this event on the kiosk.'}</span></div>
           <button class="btn btn-primary" id="add-q">${ic('plus')}Add question</button>
@@ -50,6 +53,7 @@ export async function eventEditorView(view, id) {
           </div>`;
         }).join('') : emptyState('No questions yet', 'Questions can be text, an image to reveal, or an audio clip. Options can be text or images.')}
       </section>
+`}
       <h2 class="section-title">Danger zone</h2>
       <div class="card card-pad" style="display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap">
         <div><strong>Delete this event</strong><div class="muted small">Removes its questions, plays and responses. This can’t be undone.</div></div>

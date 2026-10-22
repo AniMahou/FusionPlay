@@ -1,5 +1,6 @@
 import lottie from 'lottie-web/build/player/lottie_light';
 import { mountScene, sceneThumb } from './scenes.js';
+import { createShiritori } from './shiritori.js';
 
 const app = document.getElementById('app');
 const reduce = matchMedia('(prefers-reduced-motion: reduce)');
@@ -106,7 +107,7 @@ async function route() {
   cleanup(); cleanup = () => {};
   overlay.hidden = true;
   const [, page, id] = location.hash.slice(1).split('/');
-  const views = { realm: () => realmPage(id), event: () => eventPage(id), quiz: () => quiz(id) };
+  const views = { realm: () => realmPage(id), event: () => eventPage(id), quiz: () => quiz(id), shiritori: () => shiritoriBoard(id) };
   document.body.dataset.screen = views[page] ? page : 'home';
   (views[page] || home)();
   window.scrollTo(0, 0);
@@ -196,7 +197,7 @@ function realmPage(id) {
             <span class="theme">${icon('star')} ${esc(e.theme.name)}</span>
             <h2>${esc(e.name)}</h2>
             <p>${esc(e.blurb)}</p>
-            <span class="meta"><span>${e.questionCount} questions, ${e.timeLimit}s each</span><span>${e.joined} joined</span></span>
+            <span class="meta"><span>${e.kind === 'shiritori' ? `1v1, ${e.timeLimit}s a turn` : `${e.questionCount} questions, ${e.timeLimit}s each`}</span><span>${e.joined} joined</span></span>
           </button>`).join('')}
       </div>
     </section>`;
@@ -216,6 +217,7 @@ function realmPage(id) {
 function eventPage(id) {
   const ev = events.find((e) => e.id === id);
   if (!ev) return missing();
+  if (ev.kind === 'shiritori') return shiritori.setup(ev);
   setTheme(ev.theme);
   setMusic(ev.theme.bgm, `${ev.theme.name} theme`, { src: `/media/${ev.realm}/realm.mp3`, label: `${realms.find((r) => r.id === ev.realm)?.name || ''} theme` });
   const realm = realms.find((r) => r.id === ev.realm);
@@ -417,6 +419,19 @@ function showChar() {
   const img = app.querySelector('.char');
   if (!img) return;
   preload(img.dataset.src, (src) => { img.src = src; img.hidden = false; });
+}
+
+/* ---------- Anime Shiritori (see shiritori.js) ---------- */
+const shiritori = createShiritori({
+  app, api, esc, icon, setTheme, setMusic, reduce,
+  realmName: (id) => realms.find((r) => r.id === id)?.name || '',
+  setCleanup: (fn) => { cleanup = fn; },
+});
+function shiritoriBoard(eventId) {
+  const ev = events.find((e) => e.id === eventId);
+  const gameId = location.hash.split('/')[3];
+  if (!ev || !gameId) return missing();
+  shiritori.board(ev, gameId);
 }
 
 function missing() {

@@ -17,8 +17,8 @@ export async function eventsView(view) {
           <a class="card event-card" href="#/events/${esc(e.id)}" style="color:inherit;text-decoration:none">
             <div class="art">${sceneThumb(e.theme.scene)}${eventStatus(e.status)}</div>
             <div class="body"><h3>${esc(e.name)}</h3><span class="muted small">${esc(e.theme.name || 'No theme')}</span>
-              <div class="meta"><span>${e.questionCount} questions</span><span>${e.timeLimit}s per question</span><span>${e.joined} plays</span></div>
-              ${e.questionCount ? '' : '<span class="badge orange" style="justify-self:start;margin-top:6px">Needs questions to appear on the kiosk</span>'}</div>
+              <div class="meta"><span>${e.kind === 'shiritori' ? '1v1 word chain' : `${e.questionCount} questions`}</span><span>${e.timeLimit}s per ${e.kind === 'shiritori' ? 'turn' : 'question'}</span><span>${e.joined} plays</span></div>
+              ${e.kind === 'shiritori' ? '<span class="badge blue" style="justify-self:start;margin-top:6px">1v1 Shiritori, no questions needed</span>' : e.questionCount ? '' : '<span class="badge orange" style="justify-self:start;margin-top:6px">Needs questions to appear on the kiosk</span>'}</div>
           </a>`).join('')}</div>` : `<div class="card">${emptyState('No events yet', `Create the first ${r.name} event.`)}</div>`}`;
     }).join('')}`;
   view.querySelector('#new-event').addEventListener('click', async () => {

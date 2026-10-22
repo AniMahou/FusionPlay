@@ -56,3 +56,13 @@ Sessions last 12 hours. After 5 wrong attempts, sign-in is blocked for one minut
 | `src/admin/views/*` | One file per admin page |
 
 The server grades answers. The kiosk never receives the correct option.
+
+## Anime Shiritori (1v1)
+
+An Anime event where two players take turns at the kiosk, naming an anime character or anime title that starts with the last letter of the previous answer.
+
+- **Referee:** the server (`server/shiritori/`). Answers are matched against `server/seed/shiritori.json`, an index of about 2,000 popular anime and 3,000 characters from AniList. There's no AI, and nothing is called over the network during play.
+- **Matching:** spelling, accents, long vowels (Rintarou = Rintaro), name order and small typos are all forgiven. The official spelling decides the next letter. When a name matches several entries ("Sakura"), the player picks from a list. Every season of an anime counts as the same answer.
+- **Unknown answers:** the player taps "Ask the host". The clock pauses, and the host accepts or rejects with `HOST_PIN` from `.env`.
+- **Scoring:** 100 points per word, plus 300 for the winner. Running out of time on your turn loses the game.
+- **Refreshing the index:** run `node scripts/build-shiritori-index.mjs` (about 5 minutes, because of AniList's rate limit), then restart the server.

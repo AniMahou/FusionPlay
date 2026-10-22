@@ -9,3 +9,5 @@ server/uploads/*
 public/media/**
 !public/media/README.txt
 marketing/
+rulebook/img/
+rulebook/*.pdf

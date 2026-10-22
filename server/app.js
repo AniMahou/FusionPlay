@@ -5,6 +5,8 @@ import { randomBytes, timingSafeEqual, createHash } from 'node:crypto';
 import { writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { db, tx } from './db.js';
+import { Matcher } from './shiritori/matcher.js';
+import { ShiritoriGames } from './shiritori/game.js';
 
 const UPLOADS = fileURLToPath(new URL('./uploads/', import.meta.url));
 // The only admin credential comes from the environment (or a local .env file, never committed).
@@ -27,7 +29,7 @@ const route = (fn) => (req, res, next) => { try { const out = fn(req, res); if (
 
 /* ---------- Shared readers ---------- */
 const eventRow = (e) => e && ({
-  id: e.id, realm: e.realm_id, name: e.name, blurb: e.blurb, status: e.status, timeLimit: e.time_limit, sort: e.sort,
+  id: e.id, realm: e.realm_id, name: e.name, blurb: e.blurb, status: e.status, timeLimit: e.time_limit, sort: e.sort, kind: e.kind || 'quiz',
   theme: { name: e.theme_name, scene: e.scene, tint: [e.tint1, e.tint2], bg: `/media/${e.realm_id}/${e.id}.jpg`, video: `/media/${e.realm_id}/${e.id}.mp4`, bgm: `/media/${e.realm_id}/${e.id}.mp3`, char: `/media/${e.realm_id}/${e.id}-char.webp` },
   questionCount: e.qn ?? undefined, joined: e.joined ?? undefined,
 });
@@ -51,7 +53,7 @@ const leaderboard = (eventId, limit = 10, todayOnly = false) => q(`
 /* ========== Public (kiosk) ========== */
 app.get('/api/catalog', route(() => ({
   realms: q('SELECT * FROM realms ORDER BY sort').all().map((r) => ({ id: r.id, name: r.name, blurb: r.blurb, tint: [r.tint1, r.tint2] })),
-  events: q(`${EVENTS_SQL} WHERE e.status = 'open' ORDER BY e.sort, e.name`).all().map(eventRow).filter((e) => e.questionCount > 0),
+  events: q(`${EVENTS_SQL} WHERE e.status = 'open' ORDER BY e.sort, e.name`).all().map(eventRow).filter((e) => e.kind === 'shiritori' || e.questionCount > 0),
 })));
 
 app.get('/api/leaderboard', route((req) => leaderboard(req.query.event || null, 8, req.query.today === '1')));
@@ -60,6 +62,7 @@ app.post('/api/plays', route((req) => {
   const { eventId, name, contact, team = '' } = req.body || {};
   const ev = q("SELECT * FROM events WHERE id = ? AND status = 'open'").get(String(eventId));
   if (!ev) throw new HttpError(404, 'This event is closed.');
+  if (ev.kind === 'shiritori') bad('Start Shiritori games from the Shiritori screen.');
   const n = need(name, 'Enter a name.').slice(0, 20), c = need(contact, 'Enter an email or phone number.').slice(0, 120);
   return tx(() => {
     const pid = q('INSERT INTO participants (name, contact, team) VALUES (?, ?, ?)').run(n, c, String(team).trim().slice(0, 24)).lastInsertRowid;
@@ -95,6 +98,39 @@ app.post('/api/plays/:id/finish', route((req) => {
   const n = q('SELECT COUNT(*) n FROM questions WHERE event_id = ?').get(play.event_id).n;
   const rank = q('SELECT COUNT(*) + 1 r FROM plays WHERE event_id = ? AND finished_at IS NOT NULL AND score > ?').get(play.event_id, play.score).r;
   return { score: play.score, max: n * 300, rank };
+}));
+
+/* ========== Anime Shiritori (public, 1v1 on the kiosk) ========== */
+const matcher = Matcher.fromSeed(fileURLToPath(new URL('./seed/shiritori.json', import.meta.url)));
+console.log(`[shiritori] ${matcher.size} characters and anime indexed`);
+const games = new ShiritoriGames({ matcher, db });
+setInterval(() => games.sweep(), 600e3).unref();
+const gameFor = (req) => games.get(req.params.id) || (() => { throw new HttpError(404, 'This game has ended. Start a new one.'); })();
+const seat = (b) => (b?.player === 1 ? 1 : 0);
+
+app.get('/api/shiritori/info', route(() => ({ indexed: matcher.size, hostRuling: !!process.env.HOST_PIN })));
+app.post('/api/shiritori/games', route((req) => {
+  const ev = q("SELECT * FROM events WHERE id = ? AND status = 'open' AND kind = 'shiritori'").get(String(req.body?.eventId));
+  if (!ev) throw new HttpError(404, 'This event is closed.');
+  const ps = Array.isArray(req.body?.players) ? req.body.players : [];
+  if (ps.length !== 2) bad('Shiritori needs two players.');
+  const players = ps.map((p, i) => ({ name: need(p?.name, `Enter a name for player ${i + 1}.`).slice(0, 20), contact: need(p?.contact, `Enter an email or phone for player ${i + 1}.`).slice(0, 120), team: String(p?.team || '').trim().slice(0, 24) }));
+  if (!matcher.size) throw new HttpError(503, 'The Shiritori name index is missing. Run node scripts/build-shiritori-index.mjs.');
+  return games.view(tx(() => games.create(ev, players)));
+}));
+app.get('/api/shiritori/games/:id', route((req) => games.view(gameFor(req))));
+const act = (fn) => route((req) => { const g = gameFor(req); const result = fn(g, req.body || {}); return { result, game: games.view(g) }; });
+app.post('/api/shiritori/games/:id/play', act((g, b) => games.play(g, seat(b), b.text)));
+app.post('/api/shiritori/games/:id/choose', act((g, b) => games.choose(g, seat(b), String(b.option))));
+app.post('/api/shiritori/games/:id/appeal', act((g, b) => games.appeal(g, seat(b))));
+app.post('/api/shiritori/games/:id/forfeit', act((g, b) => games.forfeit(g, seat(b))));
+// The host settles answers the index doesn't know. The PIN (HOST_PIN in .env) keeps players from ruling for themselves.
+app.post('/api/shiritori/games/:id/rule', act((g, b) => {
+  const pin = process.env.HOST_PIN;
+  if (!pin) throw new HttpError(503, 'Host rulings are off. Set HOST_PIN in the .env file.');
+  const given = Buffer.from(String(b.pin || '')), want = Buffer.from(pin);
+  if (given.length !== want.length || !timingSafeEqual(given, want)) throw new HttpError(403, 'Wrong host PIN.');
+  return games.rule(g, !!b.accept, b.text);
 }));
 
 /* ========== Admin auth ========== */
