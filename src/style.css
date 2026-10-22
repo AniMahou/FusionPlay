@@ -371,3 +371,45 @@ body.wallpaper .bg-img.on { transform: none; }
 .shiri-host { width: min(460px, 100%); display: grid; gap: var(--s-4); }
 .shiri-host .field input { background: rgb(10 14 28 / .55); border: 1px solid rgb(211 188 142 / .35); border-radius: 4px; padding: var(--s-3) var(--s-4); color: var(--cream); }
 @media (max-width: 640px) { .shiri-input { grid-template-columns: 1fr; } }
+
+/* ---------- Shiritori rooms ---------- */
+.shiri-join { display: grid; grid-template-columns: 1fr auto; gap: var(--s-3); align-items: end; }
+.code-input { text-transform: uppercase; letter-spacing: .35em; font-family: var(--f-display); font-size: var(--t-lg) !important; }
+.shiri-or { display: flex; align-items: center; gap: var(--s-3); color: var(--text-2); font-size: var(--t-sm); }
+.shiri-or::before, .shiri-or::after { content: ""; flex: 1; height: 1px; background: rgb(255 255 255 / .14); }
+.shiri-create { justify-self: center; }
+
+.shiri-lobby { max-width: 980px; margin: var(--s-4) auto 0; display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); gap: var(--s-5); align-items: start; }
+.shiri-codecard { display: grid; gap: var(--s-3); justify-items: center; text-align: center; }
+.shiri-code { font-family: var(--f-display); font-size: clamp(3rem, 8vw, 5rem); letter-spacing: .18em; line-height: 1; color: #fff; padding-left: .18em; }
+.shiri-share { max-width: 34ch; font-size: var(--t-sm); }
+.shiri-roster { display: grid; gap: var(--s-3); }
+.shiri-roster ul { list-style: none; padding: 0; display: grid; gap: var(--s-2); }
+.shiri-roster li { display: flex; align-items: center; gap: var(--s-3); padding: var(--s-3) var(--s-4); border-radius: 12px; background: rgb(255 255 255 / .05); border: 1px solid rgb(255 255 255 / .08); }
+.shiri-roster li .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--seat); flex: none; }
+.shiri-roster li b { flex: 1; color: #fff; }
+.shiri-roster .tag { font-size: var(--t-xs); font-weight: 800; padding: 2px 10px; border-radius: 999px; background: rgb(255 255 255 / .1); color: var(--text-2); }
+.shiri-roster .tag.ok { background: rgb(155 227 176 / .2); color: #9BE3B0; }
+.shiri-roster .you { font-size: var(--t-xs); color: var(--gold-bright); }
+.shiri-roster .form-foot { flex-direction: column; align-items: center; gap: var(--s-2); }
+.shiri-roster > .link { justify-self: center; color: var(--text-2); }
+
+.shiri-table { list-style: none; padding: 0; display: flex; flex-wrap: wrap; gap: var(--s-2); justify-content: center; }
+.shiri-table li { display: grid; gap: 2px; min-width: 130px; padding: var(--s-2) var(--s-4); border-radius: 12px; background: rgb(12 14 24 / .6); backdrop-filter: blur(12px);
+  border: 1px solid rgb(255 255 255 / .1); border-top: 3px solid var(--seat); transition: transform var(--med) var(--ease), box-shadow var(--med) var(--ease); }
+.shiri-table li b { color: #fff; } .shiri-table li small { color: var(--text-2); font-weight: 600; }
+.shiri-table li span { font-size: var(--t-xs); color: var(--text-2); }
+.shiri-table li.turn { transform: translateY(-3px); box-shadow: 0 0 0 1.5px var(--seat), 0 0 32px -10px var(--seat); }
+.shiri-table li.out { opacity: .4; } .shiri-table li.out b { text-decoration: line-through; }
+.shiri-turn { text-align: center; font-size: var(--t-lg); color: var(--text-2); } .shiri-turn b { color: var(--seat, #fff); }
+.shiri-core .shiri-letter b { color: var(--seat, #fff) !important; }
+.shiri-input input:disabled { opacity: .55; }
+.shiri-chain li { border-left-color: var(--seat) !important; }
+.shiri-rank { list-style: none; padding: 0; width: 100%; display: grid; gap: var(--s-1); text-align: left; }
+.shiri-rank li { display: grid; grid-template-columns: 32px 1fr auto 60px; gap: var(--s-3); align-items: center; padding: var(--s-2) 0; border-bottom: 1px solid rgb(255 255 255 / .1); }
+.shiri-rank .rank { font-family: var(--f-display); color: var(--text-2); text-align: center; }
+.shiri-rank li:first-child .rank, .shiri-rank li:first-child b { color: var(--gold-bright); }
+.shiri-rank li > b:last-child { text-align: right; font-family: var(--f-display); }
+@media (max-width: 760px) { .shiri-lobby { grid-template-columns: 1fr; } .shiri-join { grid-template-columns: 1fr; } }
+
+.btn:disabled { opacity: .45; cursor: not-allowed; box-shadow: none; transform: none; }

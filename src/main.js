@@ -197,7 +197,7 @@ function realmPage(id) {
             <span class="theme">${icon('star')} ${esc(e.theme.name)}</span>
             <h2>${esc(e.name)}</h2>
             <p>${esc(e.blurb)}</p>
-            <span class="meta"><span>${e.kind === 'shiritori' ? `1v1, ${e.timeLimit}s a turn` : `${e.questionCount} questions, ${e.timeLimit}s each`}</span><span>${e.joined} joined</span></span>
+            <span class="meta"><span>${e.kind === 'shiritori' ? `Multiplayer, ${e.timeLimit}s a turn` : `${e.questionCount} questions, ${e.timeLimit}s each`}</span><span>${e.joined} joined</span></span>
           </button>`).join('')}
       </div>
     </section>`;
@@ -423,15 +423,15 @@ function showChar() {
 
 /* ---------- Anime Shiritori (see shiritori.js) ---------- */
 const shiritori = createShiritori({
-  app, api, esc, icon, setTheme, setMusic, reduce,
+  app, esc, icon, setTheme, setMusic, reduce,
   realmName: (id) => realms.find((r) => r.id === id)?.name || '',
   setCleanup: (fn) => { cleanup = fn; },
 });
 function shiritoriBoard(eventId) {
   const ev = events.find((e) => e.id === eventId);
-  const gameId = location.hash.split('/')[3];
-  if (!ev || !gameId) return missing();
-  shiritori.board(ev, gameId);
+  const code = location.hash.split('/')[3];
+  if (!ev || !code) return missing();
+  shiritori.room(ev, code);
 }
 
 function missing() {

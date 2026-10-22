@@ -6,7 +6,7 @@ import { writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { db, tx } from './db.js';
 import { Matcher } from './shiritori/matcher.js';
-import { ShiritoriGames } from './shiritori/game.js';
+import { ShiritoriRooms } from './shiritori/rooms.js';
 
 const UPLOADS = fileURLToPath(new URL('./uploads/', import.meta.url));
 // The only admin credential comes from the environment (or a local .env file, never committed).
@@ -100,37 +100,52 @@ app.post('/api/plays/:id/finish', route((req) => {
   return { score: play.score, max: n * 300, rank };
 }));
 
-/* ========== Anime Shiritori (public, 1v1 on the kiosk) ========== */
+/* ========== Anime Shiritori rooms (public; players join from any device) ========== */
 const matcher = Matcher.fromSeed(fileURLToPath(new URL('./seed/shiritori.json', import.meta.url)));
 console.log(`[shiritori] ${matcher.size} characters and anime indexed`);
-const games = new ShiritoriGames({ matcher, db });
-setInterval(() => games.sweep(), 600e3).unref();
-const gameFor = (req) => games.get(req.params.id) || (() => { throw new HttpError(404, 'This game has ended. Start a new one.'); })();
-const seat = (b) => (b?.player === 1 ? 1 : 0);
+const rooms = new ShiritoriRooms({ matcher, db });
+const roomFor = (req) => rooms.get(req.params.code) || (() => { throw new HttpError(404, "That room doesn't exist or has closed. Check the code."); })();
+// Each player gets a private token when they create or join; it identifies them on every request.
+const me = (req, room, required = true) => {
+  const p = rooms.player(room, String(req.get('x-player') || ''));
+  if (!p && required) throw new HttpError(403, "You're not in this room. Join it with the code first.");
+  return p;
+};
+const readPlayer = (b) => ({ name: need(b?.name, 'Enter your name.').slice(0, 20), contact: need(b?.contact, 'Enter an email or phone number.').slice(0, 120) });
 
 app.get('/api/shiritori/info', route(() => ({ indexed: matcher.size, hostRuling: !!process.env.HOST_PIN })));
-app.post('/api/shiritori/games', route((req) => {
+app.post('/api/shiritori/rooms', route((req) => {
   const ev = q("SELECT * FROM events WHERE id = ? AND status = 'open' AND kind = 'shiritori'").get(String(req.body?.eventId));
   if (!ev) throw new HttpError(404, 'This event is closed.');
-  const ps = Array.isArray(req.body?.players) ? req.body.players : [];
-  if (ps.length !== 2) bad('Shiritori needs two players.');
-  const players = ps.map((p, i) => ({ name: need(p?.name, `Enter a name for player ${i + 1}.`).slice(0, 20), contact: need(p?.contact, `Enter an email or phone for player ${i + 1}.`).slice(0, 120), team: String(p?.team || '').trim().slice(0, 24) }));
   if (!matcher.size) throw new HttpError(503, 'The Shiritori name index is missing. Run node scripts/build-shiritori-index.mjs.');
-  return games.view(tx(() => games.create(ev, players)));
+  const { name, contact } = readPlayer(req.body);
+  const { room, player } = rooms.create(ev, name, contact);
+  return { code: room.code, token: player.token };
 }));
-app.get('/api/shiritori/games/:id', route((req) => games.view(gameFor(req))));
-const act = (fn) => route((req) => { const g = gameFor(req); const result = fn(g, req.body || {}); return { result, game: games.view(g) }; });
-app.post('/api/shiritori/games/:id/play', act((g, b) => games.play(g, seat(b), b.text)));
-app.post('/api/shiritori/games/:id/choose', act((g, b) => games.choose(g, seat(b), String(b.option))));
-app.post('/api/shiritori/games/:id/appeal', act((g, b) => games.appeal(g, seat(b))));
-app.post('/api/shiritori/games/:id/forfeit', act((g, b) => games.forfeit(g, seat(b))));
-// The host settles answers the index doesn't know. The PIN (HOST_PIN in .env) keeps players from ruling for themselves.
-app.post('/api/shiritori/games/:id/rule', act((g, b) => {
-  const pin = process.env.HOST_PIN;
+app.post('/api/shiritori/rooms/:code/join', route((req) => {
+  const room = roomFor(req), { name, contact } = readPlayer(req.body);
+  try { return { code: room.code, token: rooms.join(room, name, contact).token }; } catch (e) { throw new HttpError(409, e.message); }
+}));
+app.get('/api/shiritori/rooms/:code', route((req) => { const room = roomFor(req); return rooms.view(room, me(req, room, false)); }));
+const act = (fn) => route((req) => {
+  const room = roomFor(req), p = me(req, room);
+  let result;
+  try { result = fn(room, p, req.body || {}); } catch (e) { throw new HttpError(409, e.message); }
+  return { result: result || { status: 'ok' }, room: rooms.view(room, p) };
+});
+app.post('/api/shiritori/rooms/:code/ready', act((room, p, b) => rooms.setReady(room, p, b.ready)));
+app.post('/api/shiritori/rooms/:code/start', act((room, p) => rooms.start(room, p)));
+app.post('/api/shiritori/rooms/:code/leave', act((room, p) => rooms.leave(room, p)));
+app.post('/api/shiritori/rooms/:code/play', act((room, p, b) => rooms.play(room, p, b.text)));
+app.post('/api/shiritori/rooms/:code/choose', act((room, p, b) => rooms.choose(room, p, String(b.option))));
+app.post('/api/shiritori/rooms/:code/appeal', act((room, p) => rooms.appeal(room, p)));
+// Event staff settle answers the index doesn't know. HOST_PIN (in .env) keeps players from ruling for themselves.
+app.post('/api/shiritori/rooms/:code/rule', route((req) => {
+  const room = roomFor(req), pin = process.env.HOST_PIN;
   if (!pin) throw new HttpError(503, 'Host rulings are off. Set HOST_PIN in the .env file.');
-  const given = Buffer.from(String(b.pin || '')), want = Buffer.from(pin);
+  const given = Buffer.from(String(req.body?.pin || '')), want = Buffer.from(pin);
   if (given.length !== want.length || !timingSafeEqual(given, want)) throw new HttpError(403, 'Wrong host PIN.');
-  return games.rule(g, !!b.accept, b.text);
+  return { result: rooms.rule(room, !!req.body?.accept, req.body?.text), room: rooms.view(room, me(req, room, false)) };
 }));
 
 /* ========== Admin auth ========== */

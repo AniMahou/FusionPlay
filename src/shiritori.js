@@ -1,190 +1,288 @@
-// Anime Shiritori on the kiosk: two-player sign-up, then the 1v1 board.
-// The server referees every turn; this file only shows state and sends what players type.
+// Anime Shiritori rooms on the kiosk or any phone: create or join a room with a code,
+// ready up in the lobby, then play round the table until one player is left.
+// The server referees everything; this file shows the room and sends what this player does.
 
-const RESULT_SECONDS = 15;
+const POLL_MS = 1000;
+const SEAT_COLOURS = ['#F28BB0', '#6FD3C6', '#F2C46B', '#9AA8FF', '#9BE3B0', '#FF9D6B', '#D59BFF', '#7FD1F2', '#F7A1C4', '#B5E86F', '#FFD08A', '#A0C4FF'];
+const tokenKey = (code) => `shiritori:${code}`;
+const loadToken = (code) => { try { return localStorage.getItem(tokenKey(code)); } catch { return null; } };
+const saveToken = (code, t) => { try { localStorage.setItem(tokenKey(code), t); } catch { /* private mode: token lives for this page only */ } };
+const dropToken = (code) => { try { localStorage.removeItem(tokenKey(code)); } catch { /* ignore */ } };
 
 export function createShiritori(ctx) {
-  const { app, api, esc, icon, setTheme, setMusic, realmName, reduce, setCleanup } = ctx;
+  const { app, esc, icon, setTheme, setMusic, realmName, reduce, setCleanup } = ctx;
+  const memoryTokens = new Map();
 
-  /* ---------- Sign-up: rules on the left, two players on the right ---------- */
-  function setup(ev) {
+  async function call(method, url, body, token) {
+    const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json', ...(token ? { 'X-Player': token } : {}) }, body: body ? JSON.stringify(body) : undefined });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw Object.assign(new Error(data.error || 'The game server did not respond. Check your connection.'), { status: res.status });
+    return data;
+  }
+  const theme = (ev) => {
     setTheme(ev.theme);
     setMusic(ev.theme.bgm, `${ev.theme.name} theme`, { src: `/media/${ev.realm}/realm.mp3`, label: `${realmName(ev.realm)} theme` });
-    const field = (n, key, label, ph, req = true) => `<div class="field"><label for="p${n}-${key}">${label}</label>
-      <input id="p${n}-${key}" autocomplete="off" maxlength="${key === 'contact' ? 120 : 20}" placeholder="${ph}" ${req ? 'required' : ''}></div>`;
+  };
+  const rules = (ev) => `<ol class="shiri-rules">
+    <li>Name an <b>anime character</b> or an <b>anime title</b> that starts with the <b>last letter</b> of the previous answer.</li>
+    <li>Turns go round the room in join order. You get <b>${ev.timeLimit} seconds</b>.</li>
+    <li>Run out of time and you're <b>out</b>. The next player gets the same letter.</li>
+    <li>Spelling is corrected to the official name, which sets the next letter. Either name order works.</li>
+    <li>No repeats. The last player standing wins.</li>
+  </ol>`;
+
+  /* ---------- Create or join ---------- */
+  function setup(ev, presetCode = '') {
+    theme(ev);
     app.innerHTML = `
       <a class="btn btn-ghost btn-sm screen" href="#/realm/${ev.realm}"><span class="badge">${icon('back')}</span>${esc(realmName(ev.realm))} events</a>
       <section class="event-page shiri-setup screen">
         <div class="event-intro">
-          <span class="eyebrow-star">${icon('wish')} 1v1 word chain</span>
+          <span class="eyebrow-star">${icon('wish')} Multiplayer word chain</span>
           <p class="theme-name display gold-text">Shiritori</p>
           <h1 class="display">${esc(ev.name)}</h1>
-          <ol class="shiri-rules">
-            <li>Take turns naming an <b>anime character</b> or an <b>anime title</b>.</li>
-            <li>Your answer must start with the <b>last letter</b> of the previous one.</li>
-            <li>Spelling is corrected to the official name, and either name order works. The official spelling sets the next letter.</li>
-            <li><b>${ev.timeLimit} seconds</b> a turn. Run out of time and you lose.</li>
-            <li>No repeats. A name we don't know? Ask the host to rule.</li>
-          </ol>
+          ${rules(ev)}
         </div>
         <div class="panel register">
-          <h2 class="display gold-text">Two players</h2>
-          <p class="sub">Both names go on today's leaderboard.</p>
-          <form novalidate>
-            <div class="shiri-seat"><span class="seat-tag p1">Player 1</span>${field(1, 'name', 'Name', 'Hana')}${field(1, 'contact', 'Email or phone', 'hana@example.com')}</div>
-            <div class="shiri-seat"><span class="seat-tag p2">Player 2</span>${field(2, 'name', 'Name', 'Ren')}${field(2, 'contact', 'Email or phone', 'ren@example.com')}</div>
+          <h2 class="display gold-text">${presetCode ? `Join room ${esc(presetCode)}` : 'Play together'}</h2>
+          <p class="sub">Everyone plays on their own phone or laptop. Your name goes on today's leaderboard.</p>
+          <form novalidate id="who">
+            <div class="field"><label for="s-name">Your name</label><input id="s-name" autocomplete="off" maxlength="20" placeholder="Hana"></div>
+            <div class="field"><label for="s-contact">Email or phone</label><input id="s-contact" autocomplete="off" placeholder="hana@example.com"><p class="hint">Only used to reach prize winners.</p></div>
+            <div class="shiri-join">
+              <div class="field"><label for="s-code">Room code</label><input id="s-code" autocomplete="off" maxlength="5" placeholder="ABCDE" value="${esc(presetCode)}" class="code-input"></div>
+              <button class="btn" type="submit" data-act="join"><span class="badge">${icon('play')}</span>Join room</button>
+            </div>
+            ${presetCode ? '' : `<div class="shiri-or"><span>or</span></div>
+            <button class="btn btn-ghost shiri-create" type="button" data-act="create"><span class="badge">${icon('wish')}</span>Create a new room</button>`}
             <p class="hint err" id="form-error" hidden></p>
-            <div class="form-foot"><button class="btn" type="submit"><span class="badge">${icon('wish')}</span>Start the duel</button></div>
           </form>
         </div>
       </section>`;
-    const form = app.querySelector('form'), err = app.querySelector('#form-error');
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const val = (id) => app.querySelector(`#${id}`).value.trim();
-      const players = [1, 2].map((n) => ({ name: val(`p${n}-name`), contact: val(`p${n}-contact`) }));
-      const missingField = ['p1-name', 'p1-contact', 'p2-name', 'p2-contact'].find((id) => !val(id));
-      if (missingField) { err.textContent = 'Fill in a name and an email or phone for both players.'; err.hidden = false; app.querySelector(`#${missingField}`).focus(); return; }
-      const btn = form.querySelector('[type=submit]'); btn.disabled = true; err.hidden = true;
+    const $ = (s) => app.querySelector(s), err = $('#form-error');
+    const fail = (m, focus) => { err.textContent = m; err.hidden = false; focus?.focus(); };
+    const codeInput = $('#s-code');
+    codeInput.addEventListener('input', () => { codeInput.value = codeInput.value.toUpperCase().replace(/[^A-Z0-9]/g, ''); });
+    (presetCode ? $('#s-name') : $('#s-name')).focus();
+    async function go(kind) {
+      err.hidden = true;
+      const name = $('#s-name').value.trim(), contact = $('#s-contact').value.trim(), code = codeInput.value.trim();
+      if (!name) return fail('Enter your name.', $('#s-name'));
+      if (!contact) return fail('Enter an email or phone number.', $('#s-contact'));
+      if (kind === 'join' && code.length !== 5) return fail('Enter the 5-character room code.', codeInput);
+      app.querySelectorAll('[data-act]').forEach((b) => { b.disabled = true; });
       try {
-        const g = await api('/api/shiritori/games', { eventId: ev.id, players });
-        location.hash = `#/shiritori/${ev.id}/${g.id}`;
-      } catch (ex) { err.textContent = ex.message; err.hidden = false; btn.disabled = false; }
-    });
+        const r = kind === 'create'
+          ? await call('POST', '/api/shiritori/rooms', { eventId: ev.id, name, contact })
+          : await call('POST', `/api/shiritori/rooms/${code}/join`, { name, contact });
+        saveToken(r.code, r.token); memoryTokens.set(r.code, r.token);
+        location.hash = `#/shiritori/${ev.id}/${r.code}`;
+      } catch (ex) { fail(ex.message); app.querySelectorAll('[data-act]').forEach((b) => { b.disabled = false; }); }
+    }
+    $('#who').addEventListener('submit', (e) => { e.preventDefault(); go('join'); });
+    $('[data-act="create"]')?.addEventListener('click', () => go('create'));
   }
 
-  /* ---------- The board ---------- */
-  async function board(ev, gameId) {
-    setTheme(ev.theme);
-    setMusic(ev.theme.bgm, `${ev.theme.name} theme`, { src: `/media/${ev.realm}/realm.mp3`, label: `${realmName(ev.realm)} theme` });
-    let g, lastTyped = '', ticking = 0, slowTick = 0, frame = 0, endTimer = 0, hostOk = false;
-    try { [g, { hostRuling: hostOk }] = await Promise.all([api(`/api/shiritori/games/${gameId}`), api('/api/shiritori/info')]); }
-    catch (ex) { app.innerHTML = `<section class="panel result screen"><h1 class="display">${esc(ex.message)}</h1><a class="btn" href="#/event/${ev.id}"><span class="badge">${icon('wish')}</span>New game</a></section>`; return; }
-
-    app.innerHTML = `
-      <section class="shiri screen">
-        <div class="shiri-players">${[0, 1].map((i) => `<div class="shiri-player p${i + 1}" data-seat="${i}"><span class="seat-tag p${i + 1}">Player ${i + 1}</span><b class="pname"></b><span class="pwords"></span></div>`).join('')}</div>
-        <div class="panel shiri-core">
-          <div class="shiri-letter"><span class="muted">Starts with</span><b id="letter"></b></div>
-          <div class="timer" role="timer" aria-label="Seconds left"><div class="timer-track"><div class="timer-fill" id="fill"></div></div><span class="timer-num" id="secs"></span></div>
-          <form class="shiri-input" novalidate>
-            <label class="sr-only" for="answer">Your answer</label>
-            <input id="answer" autocomplete="off" spellcheck="false" maxlength="80" placeholder="A character or an anime">
-            <button class="btn" type="submit"><span class="badge">${icon('play')}</span>Play</button>
-          </form>
-          <p class="shiri-msg" id="msg" aria-live="polite"></p>
-          <div class="shiri-choose" id="choose" hidden></div>
-          <div class="shiri-actions"><button class="link" id="appeal" type="button" hidden>Ask the host to rule</button><button class="link" id="forfeit" type="button">Give up</button></div>
-        </div>
-        <ol class="shiri-chain" id="chain" aria-label="Words played"></ol>
-      </section>`;
+  /* ---------- The room: lobby, game, results ---------- */
+  function room(ev, code) {
+    code = String(code || '').toUpperCase();
+    const token = memoryTokens.get(code) || loadToken(code);
+    if (!token) return setup(ev, code);
+    theme(ev);
+    let r = null, shown = '', poll = 0, frame = 0, slowTick = 0, lastTyped = '', hostOk = false, myTurnBefore = false, busy = false;
     const $ = (s) => app.querySelector(s);
-    const input = $('#answer'), msg = $('#msg');
-    const say = (text, kind = '') => { msg.textContent = text; msg.className = `shiri-msg ${kind}`; };
+    const colour = (id) => SEAT_COLOURS[Math.max(0, r.players.findIndex((p) => p.id === id)) % SEAT_COLOURS.length];
+    const nameOf = (id) => r.players.find((p) => p.id === id)?.name || '';
+    const shareUrl = () => `${location.origin}${location.pathname}#/shiritori/${ev.id}/${code}`;
 
-    function render() {
-      app.querySelectorAll('.shiri-player').forEach((el, i) => {
-        el.classList.toggle('active', g.status === 'playing' && g.turn === i);
-        el.querySelector('.pname').textContent = g.players[i].name;
-        el.querySelector('.pwords').textContent = `${g.players[i].words} ${g.players[i].words === 1 ? 'word' : 'words'}`;
-      });
-      $('#letter').textContent = g.letter.toUpperCase();
-      $('.shiri-core').dataset.seat = g.turn;
-      input.placeholder = `${g.players[g.turn].name}: a character or anime starting with ${g.letter.toUpperCase()}`;
-      $('#chain').innerHTML = g.chain.slice().reverse().map((w) => `<li class="p${w.by + 1}"><b>${esc(w.text)}</b><small>${w.manual ? 'Host ruling' : w.kind === 'anime' ? 'Anime' : esc(w.anime || 'Character')}</small></li>`).join('');
-      const ch = $('#choose');
-      ch.hidden = !g.pending;
-      ch.innerHTML = g.pending ? `<p>Which one do you mean?</p>${g.pending.map((o) => `<button type="button" data-opt="${esc(o.id)}"><b>${esc(o.text)}</b><small>${o.kind === 'anime' ? 'Anime' : esc(o.anime || 'Character')}</small></button>`).join('')}` : '';
-      ch.querySelectorAll('[data-opt]').forEach((b) => b.addEventListener('click', () => send('choose', { option: b.dataset.opt })));
-      startClock();
-      if (g.status === 'over') finish();
+    async function refresh() {
+      try { const next = await call('GET', `/api/shiritori/rooms/${code}`, null, token); apply(next); }
+      catch (ex) {
+        if (ex.status === 404 || ex.status === 403) { stop(); dropToken(code); app.innerHTML = gone(ex.message); }
+      }
     }
-
-    // Count down locally from the server's "ms left"; when it runs out, ask the server to settle it.
-    function startClock() {
-      cancelAnimationFrame(frame); clearTimeout(ticking); clearInterval(slowTick);
-      const fill = $('#fill'), secs = $('#secs'), timer = $('.timer');
-      const until = performance.now() + g.leftMs;
-      const draw = () => {
-        const left = g.paused ? g.leftMs : Math.max(0, until - performance.now());
-        fill.style.transform = `scaleX(${left / g.limitMs})`;
-        secs.textContent = g.paused ? 'Paused' : Math.ceil(left / 1000);
-        timer.classList.toggle('low', !g.paused && left <= 5000);
-        if (!g.paused && g.status === 'playing' && left > 0 && !reduce.matches) frame = requestAnimationFrame(draw);
-      };
-      if (reduce.matches && !g.paused && g.status === 'playing') slowTick = setInterval(draw, 250);
-      draw();
-      if (g.status === 'playing' && !g.paused) ticking = setTimeout(async () => { g = await api(`/api/shiritori/games/${gameId}`).catch(() => g); render(); }, g.leftMs + 1700);
+    function apply(next) {
+      const changed = !r || next.version !== r.version || next.status !== r.status;
+      r = next;
+      if (!r.you) { stop(); dropToken(code); setup(ev, code); return; }
+      if (r.status !== shown) { shown = r.status; ({ lobby: drawLobby, playing: drawGame, over: drawOver })[r.status](); }
+      else if (changed) ({ lobby: fillLobby, playing: fillGame, over: () => {} })[r.status]();
+      if (r.status === 'playing') startClock();
     }
-
+    const gone = (m) => `<section class="panel result screen"><h1 class="display">This room has closed</h1><p class="muted">${esc(m)}</p>
+      <a class="btn" href="#/event/${ev.id}"><span class="badge">${icon('wish')}</span>Back to Shiritori</a></section>`;
     async function send(action, body = {}) {
-      let r;
-      try { r = await api(`/api/shiritori/games/${gameId}/${action}`, { player: g.turn, ...body }); }
+      if (busy) return null; busy = true;
+      try { const res = await call('POST', `/api/shiritori/rooms/${code}/${action}`, body, token); apply(res.room); return res.result; }
       catch (ex) { say(ex.message, 'bad'); return null; }
-      g = r.game;
-      const res = r.result;
-      $('#appeal').hidden = !(res.canAppeal && hostOk);
-      if (res.status === 'accepted') { say(`${res.text}. Next letter: ${g.letter.toUpperCase()}`, 'good'); input.value = ''; }
-      else if (res.status === 'rejected') say(res.reason, 'bad');
-      else if (res.status === 'choose') say('Several names match. Pick the one you mean.');
-      render();
-      if (g.status === 'playing') input.focus();
-      return res;
+      finally { busy = false; }
+    }
+    function say(text, kind = '') { const m = $('#msg'); if (m) { m.textContent = text; m.className = `shiri-msg ${kind}`; } }
+
+    /* Lobby */
+    function drawLobby() {
+      app.innerHTML = `
+        <section class="shiri-lobby screen">
+          <div class="panel shiri-codecard">
+            <span class="muted">Room code</span>
+            <p class="shiri-code" aria-label="Room code ${code.split('').join(' ')}">${esc(code)}</p>
+            <p class="muted shiri-share">Others join at <b>${esc(location.host)}</b> → Anime → Anime Shiritori, with this code.</p>
+            <button class="btn btn-ghost btn-sm" id="copy" type="button"><span class="badge">${icon('scroll')}</span>Copy invite link</button>
+          </div>
+          <div class="panel shiri-roster">
+            <h2 class="display gold-text">Players</h2>
+            <ul id="roster"></ul>
+            <p class="shiri-msg" id="msg" aria-live="polite"></p>
+            <div class="form-foot" id="lobby-actions"></div>
+            <button class="link" id="leave" type="button">Leave room</button>
+          </div>
+        </section>`;
+      $('#copy').addEventListener('click', async () => {
+        try { await navigator.clipboard.writeText(shareUrl()); say('Invite link copied.', 'good'); } catch { say(shareUrl()); }
+      });
+      $('#leave').addEventListener('click', async () => { await send('leave'); stop(); dropToken(code); location.hash = `#/event/${ev.id}`; });
+      fillLobby();
+    }
+    function fillLobby() {
+      const host = r.you.isHost, others = r.players.filter((p) => p.id !== r.hostId), waiting = others.filter((p) => !p.ready).length;
+      $('#roster').innerHTML = r.players.map((p) => `<li style="--seat:${colour(p.id)}"><span class="dot"></span><b>${esc(p.name)}</b>
+        ${p.id === r.hostId ? '<span class="tag">Host</span>' : p.ready ? '<span class="tag ok">Ready</span>' : '<span class="tag">Not ready</span>'}
+        ${p.id === r.you.id ? '<span class="you">You</span>' : ''}</li>`).join('');
+      const me = r.players.find((p) => p.id === r.you.id);
+      const box = $('#lobby-actions');
+      if (host) {
+        const why = r.players.length < 2 ? 'Waiting for at least one more player to join.' : waiting ? `Waiting for ${waiting} ${waiting === 1 ? 'player' : 'players'} to get ready.` : 'Everyone is ready.';
+        box.innerHTML = `<p class="muted">${why}</p><button class="btn" id="start" type="button" ${r.canStart ? '' : 'disabled'}><span class="badge">${icon('play')}</span>Start the game</button>`;
+        $('#start').addEventListener('click', () => send('start'));
+      } else {
+        box.innerHTML = `<p class="muted">${me.ready ? 'Waiting for the host to start.' : 'Press Ready when you are set.'}</p>
+          <button class="btn${me.ready ? ' btn-ghost' : ''}" id="ready" type="button"><span class="badge">${icon(me.ready ? 'close' : 'star')}</span>${me.ready ? 'Not ready' : "I'm ready"}</button>`;
+        $('#ready').addEventListener('click', () => send('ready', { ready: !me.ready }));
+      }
     }
 
-    $('.shiri-input').addEventListener('submit', (e) => { e.preventDefault(); lastTyped = input.value.trim(); if (lastTyped) send('play', { text: lastTyped }); });
-    $('#forfeit').addEventListener('click', () => { if (confirm(`${g.players[g.turn].name}, give up this game?`)) send('forfeit'); });
-    $('#appeal').addEventListener('click', async () => { if ((await send('appeal'))?.status === 'paused') hostSheet(); });
-
+    /* Game */
+    function drawGame() {
+      app.innerHTML = `
+        <section class="shiri screen">
+          <ol class="shiri-table" id="table" aria-label="Players"></ol>
+          <div class="panel shiri-core">
+            <p class="shiri-turn" id="turn" aria-live="polite"></p>
+            <div class="shiri-letter"><span class="muted">Starts with</span><b id="letter"></b></div>
+            <div class="timer" role="timer" aria-label="Seconds left"><div class="timer-track"><div class="timer-fill" id="fill"></div></div><span class="timer-num" id="secs"></span></div>
+            <form class="shiri-input" novalidate>
+              <label class="sr-only" for="answer">Your answer</label>
+              <input id="answer" autocomplete="off" spellcheck="false" maxlength="80">
+              <button class="btn" type="submit" id="playbtn"><span class="badge">${icon('play')}</span>Play</button>
+            </form>
+            <p class="shiri-msg" id="msg" aria-live="polite"></p>
+            <div class="shiri-choose" id="choose" hidden></div>
+            <div class="shiri-actions"><button class="link" id="appeal" type="button" hidden>Ask the host to rule</button><button class="link" id="leave" type="button">Leave game</button></div>
+          </div>
+          <ol class="shiri-chain" id="chain" aria-label="Words played"></ol>
+        </section>`;
+      $('.shiri-input').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const input = $('#answer'); lastTyped = input.value.trim();
+        if (!lastTyped) return;
+        const res = await send('play', { text: lastTyped });
+        if (!res) return;
+        $('#appeal').hidden = !(res.canAppeal && hostOk);
+        if (res.status === 'accepted') { input.value = ''; say(`${res.text}. Nice.`, 'good'); }
+        else if (res.status === 'rejected') say(res.reason, 'bad');
+        else if (res.status === 'choose') say('Several names match. Pick the one you mean.');
+      });
+      $('#leave').addEventListener('click', async () => {
+        if (!confirm('Leave the game? You will be out.')) return;
+        await send('leave');
+      });
+      $('#appeal').addEventListener('click', async () => { if ((await send('appeal'))?.status === 'paused') hostSheet(); });
+      fillGame();
+    }
+    function fillGame() {
+      const mine = r.turnId === r.you.id, meAlive = r.players.find((p) => p.id === r.you.id)?.alive;
+      $('#table').innerHTML = r.players.map((p) => `<li class="${p.id === r.turnId ? 'turn' : ''} ${p.alive ? '' : 'out'}" style="--seat:${colour(p.id)}">
+        <b>${esc(p.name)}${p.id === r.you.id ? ' <small>(you)</small>' : ''}</b><span>${p.alive ? `${p.words} ${p.words === 1 ? 'word' : 'words'}` : 'Out'}</span></li>`).join('');
+      $('#letter').textContent = r.letter.toUpperCase();
+      $('.shiri-core').style.setProperty('--seat', colour(r.turnId));
+      $('#turn').innerHTML = !meAlive ? `You're out. Watching <b>${esc(nameOf(r.turnId))}</b>.` : mine ? '<b>Your turn!</b>' : `<b>${esc(nameOf(r.turnId))}</b>'s turn`;
+      const input = $('#answer'), btn = $('#playbtn');
+      input.disabled = btn.disabled = !mine;
+      input.placeholder = mine ? `A character or anime starting with ${r.letter.toUpperCase()}` : `Waiting for ${nameOf(r.turnId)}…`;
+      if (mine && !myTurnBefore) { input.value = ''; input.focus(); say(r.log); navigator.vibrate?.(120); $('#appeal').hidden = true; }
+      if (!mine) { say(r.log); $('#appeal').hidden = true; }
+      myTurnBefore = mine;
+      $('#chain').innerHTML = r.chain.slice().reverse().map((w) => `<li style="--seat:${colour(w.by)}"><b>${esc(w.text)}</b>
+        <small>${esc(w.name)} · ${w.manual ? 'Host ruling' : w.kind === 'anime' ? 'Anime' : esc(w.anime || 'Character')}</small></li>`).join('');
+      const ch = $('#choose');
+      ch.hidden = !r.pending;
+      ch.innerHTML = r.pending ? `<p>Which one do you mean?</p>${r.pending.map((o) => `<button type="button" data-opt="${esc(o.id)}"><b>${esc(o.text)}</b><small>${o.kind === 'anime' ? 'Anime' : esc(o.anime || 'Character')}</small></button>`).join('')}` : '';
+      ch.querySelectorAll('[data-opt]').forEach((b) => b.addEventListener('click', () => send('choose', { option: b.dataset.opt })));
+    }
+    // Count down locally from the server's "ms left", re-anchored on every poll.
+    function startClock() {
+      cancelAnimationFrame(frame); clearInterval(slowTick);
+      const fill = $('#fill'), secs = $('#secs'), timer = $('.timer');
+      if (!fill) return;
+      const until = performance.now() + r.leftMs;
+      const draw = () => {
+        const left = r.paused ? r.leftMs : Math.max(0, until - performance.now());
+        fill.style.transform = `scaleX(${left / r.limitMs})`;
+        secs.textContent = r.paused ? 'Paused' : Math.ceil(left / 1000);
+        timer.classList.toggle('low', !r.paused && left <= 5000);
+        if (!r.paused && left > 0 && !reduce.matches) frame = requestAnimationFrame(draw);
+      };
+      if (reduce.matches) slowTick = setInterval(draw, 250);
+      draw();
+    }
     function hostSheet() {
       const o = document.getElementById('overlay');
       o.innerHTML = `<div class="panel board shiri-host" role="dialog" aria-modal="true" aria-labelledby="host-h">
         <h2 class="display gold-text" id="host-h">Host ruling</h2>
-        <p class="muted">Is this a real anime character or title starting with ${g.letter.toUpperCase()}?</p>
+        <p class="muted">Ask event staff. Is this a real anime character or title starting with ${r.letter.toUpperCase()}?</p>
         <div class="field"><label for="host-answer">Answer</label><input id="host-answer" maxlength="80" value="${esc(lastTyped)}"></div>
         <div class="field"><label for="host-pin">Host PIN</label><input id="host-pin" type="password" inputmode="numeric" autocomplete="off"></div>
         <p class="hint err" id="host-err" hidden></p>
         <div class="form-foot" style="gap:12px"><button class="btn btn-ghost" id="host-no" type="button">Reject</button><button class="btn" id="host-yes" type="button"><span class="badge">${icon('star')}</span>Accept</button></div>
       </div>`;
-      o.hidden = false;
-      o.querySelector('#host-pin').focus();
+      o.hidden = false; o.querySelector('#host-pin').focus();
       const decide = async (accept) => {
         const e = o.querySelector('#host-err'); e.hidden = true;
         try {
-          const r = await api(`/api/shiritori/games/${gameId}/rule`, { pin: o.querySelector('#host-pin').value, accept, text: o.querySelector('#host-answer').value });
-          if (r.result.status === 'rejected') { e.textContent = r.result.reason; e.hidden = false; return; }
-          g = r.game; o.hidden = true; input.value = '';
-          say(accept ? `Host accepted. Next letter: ${g.letter.toUpperCase()}` : 'Host rejected that answer. Keep going.', accept ? 'good' : 'bad');
-          $('#appeal').hidden = true; render(); input.focus();
+          const res = await call('POST', `/api/shiritori/rooms/${code}/rule`, { pin: o.querySelector('#host-pin').value, accept, text: o.querySelector('#host-answer').value }, token);
+          if (res.result.status === 'rejected') { e.textContent = res.result.reason; e.hidden = false; return; }
+          o.hidden = true; apply(res.room);
         } catch (ex) { e.textContent = ex.message; e.hidden = false; }
       };
       o.querySelector('#host-yes').addEventListener('click', () => decide(true));
       o.querySelector('#host-no').addEventListener('click', () => decide(false));
     }
 
-    function finish() {
-      cancelAnimationFrame(frame); clearTimeout(ticking); clearInterval(slowTick);
-      const w = g.winner, win = g.players[w], lose = g.players[1 - w];
-      let left = RESULT_SECONDS;
+    /* Results */
+    function drawOver() {
+      cancelAnimationFrame(frame); clearInterval(slowTick); stop(); dropToken(code);
+      document.getElementById('overlay').hidden = true;
+      const winner = r.players.find((p) => p.id === r.winnerId);
+      // Winner first, then whoever lasted longest.
+      const ranked = r.players.slice().sort((a, b) => (b.id === r.winnerId) - (a.id === r.winnerId) || (b.out ?? 99) - (a.out ?? 99));
       app.innerHTML = `
         <section class="panel result screen">
-          <span class="eyebrow-star">${icon('star')} ${esc(g.reason)}</span>
-          <p class="score gold-text">${esc(win.name)}</p>
-          <h1 class="display">wins the duel</h1>
-          <p class="muted">${esc(win.name)}: ${win.words} words, ${win.score} points · ${esc(lose.name)}: ${lose.words} words, ${lose.score} points</p>
-          <p class="muted">Longest chain: ${g.chain.length} ${g.chain.length === 1 ? 'word' : 'words'}. Both scores are on today's leaderboard.</p>
-          <hr class="rule" style="width:100%" />
-          <div class="form-foot" style="gap:12px"><a class="btn btn-ghost" href="#/event/${ev.id}">Rematch</a><button class="btn" id="home"><span class="badge">${icon('wish')}</span>Next players</button></div>
-          <p class="countdown">Returning to the start in <span id="count">${left}</span> seconds</p>
+          <span class="eyebrow-star">${icon('star')} ${esc(r.reason || 'Game over')}</span>
+          <p class="score gold-text">${esc(winner?.name || 'No winner')}</p>
+          <h1 class="display">${winner?.id === r.you.id ? 'You win!' : 'wins the room'}</h1>
+          <ol class="shiri-rank">${ranked.map((p, i) => `<li><span class="rank">${i + 1}</span><b>${esc(p.name)}</b><span>${p.words} ${p.words === 1 ? 'word' : 'words'}</span><b>${p.score}</b></li>`).join('')}</ol>
+          <p class="muted">Chain length: ${r.chain.length}. Scores are on today's leaderboard.</p>
+          <div class="form-foot" style="gap:12px"><a class="btn btn-ghost" href="#/realm/${ev.realm}">Back to events</a><a class="btn" href="#/event/${ev.id}"><span class="badge">${icon('wish')}</span>New room</a></div>
         </section>`;
-      app.querySelector('#home').addEventListener('click', () => { location.hash = '#/'; });
-      endTimer = setInterval(() => { left--; const c = app.querySelector('#count'); if (c) c.textContent = left; if (left <= 0) location.hash = '#/'; }, 1000);
     }
 
-    setCleanup(() => { cancelAnimationFrame(frame); clearTimeout(ticking); clearInterval(slowTick); clearInterval(endTimer); document.getElementById('overlay').hidden = true; });
-    render();
-    input.focus();
+    function stop() { clearInterval(poll); poll = 0; }
+    setCleanup(() => { stop(); cancelAnimationFrame(frame); clearInterval(slowTick); document.getElementById('overlay').hidden = true; });
+    app.innerHTML = '<section class="panel result screen"><p class="muted">Joining the room…</p></section>';
+    call('GET', '/api/shiritori/info').then((i) => { hostOk = i.hostRuling; }).catch(() => {});
+    refresh();
+    poll = setInterval(refresh, POLL_MS);
   }
 
-  return { setup, board };
+  return { setup, room };
 }
