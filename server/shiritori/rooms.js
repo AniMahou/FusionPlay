@@ -146,13 +146,23 @@ export class ShiritoriRooms {
     if (!fits.length) return { status: 'rejected', reason: `${all[0].alias.text} doesn't start with "${room.letter.toUpperCase()}".` };
     // Every season of an anime counts as the same answer.
     const titleKey = (m) => `t:${m.alias.key}`;
-    const isUsed = (m) => room.used.has(m.entity.id) || (m.entity.kind === 'anime' && room.used.has(titleKey(m)));
+    // The same answer text can't be played twice either ("Sakura" once, whichever Sakura it was).
+    const isUsed = (m) => room.used.has(m.entity.id) || room.used.has(`x:${m.alias.key}`) || (m.entity.kind === 'anime' && room.used.has(titleKey(m)));
     const fresh = fits.filter((m) => !isUsed(m));
     if (!fresh.length) return { status: 'rejected', reason: `${fits[0].alias.text} has already been played.` };
     const top = fresh[0].quality, seen = new Set();
-    const tied = fresh.filter((m) => m.quality === top)
-      .filter((m) => m.entity.kind !== 'anime' || (!seen.has(m.alias.key) && seen.add(m.alias.key))).slice(0, 4);
-    const option = (m) => ({ id: m.entity.id, text: m.alias.text, kind: m.entity.kind, anime: m.entity.anime || null, usedKey: m.entity.kind === 'anime' ? [m.entity.id, titleKey(m)] : m.entity.id });
+    let tied = fresh.filter((m) => m.quality === top)
+      .filter((m) => m.entity.kind !== 'anime' || (!seen.has(m.alias.key) && seen.add(m.alias.key)))
+      .sort((a, b) => b.entity.pop - a.entity.pop);
+    // When one character is far better known than everyone sharing the name ("Itachi"), take them without asking.
+    const sameKind = tied.filter((m) => m.entity.kind === tied[0].entity.kind);
+    // A first or last name alone ("Sakura") needs a much bigger gap than a full name before we skip the list.
+    const singleWord = !tied[0].alias.key.includes(' ');
+    if (tied.length > 1 && sameKind.length === tied.length && tied[0].entity.pop >= (singleWord ? 15 : 4) * tied[1].entity.pop) tied = [tied[0]];
+    tied = tied.slice(0, 6);
+    // `text` is what was played (it sets the next letter); `label` tells the options apart in the pick list.
+    const option = (m) => ({ id: m.entity.id, text: m.alias.text, label: m.entity.name, kind: m.entity.kind, anime: m.entity.anime || null,
+      usedKey: [m.entity.id, `x:${m.alias.key}`, ...(m.entity.kind === 'anime' ? [titleKey(m)] : [])] });
     if (tied.length > 1) { room.pending = tied.map(option); room.version++; return { status: 'choose' }; }
     return this.#accept(room, p, option(tied[0]));
   }
@@ -174,7 +184,7 @@ export class ShiritoriRooms {
     if (!accept) { room.deadline = Date.now() + room.pausedLeft; room.pausedLeft = null; room.log = 'The host rejected that answer.'; room.version++; return { status: 'resumed' }; }
     const typed = String(text || '').trim().slice(0, 80), letters = chainLetters(typed);
     if (!letters || letters[0] !== room.letter) return { status: 'rejected', reason: `It must start with "${room.letter.toUpperCase()}".` };
-    const usedKey = `m:${normalize(typed)}`;
+    const usedKey = `x:${normalize(typed)}`;
     if (room.used.has(usedKey)) return { status: 'rejected', reason: 'That answer has already been played.' };
     return this.#accept(room, p, { usedKey, text: typed, kind: 'manual', manual: true });
   }

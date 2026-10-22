@@ -10,7 +10,8 @@ const saveToken = (code, t) => { try { localStorage.setItem(tokenKey(code), t); 
 const dropToken = (code) => { try { localStorage.removeItem(tokenKey(code)); } catch { /* ignore */ } };
 
 export function createShiritori(ctx) {
-  const { app, esc, icon, setTheme, setMusic, realmName, reduce, setCleanup } = ctx;
+  const { app, esc, icon, setTheme, setMusic, stopMusic, realmName, reduce, setCleanup } = ctx;
+  const GAME_TRACK = { src: '/media/anime/shiritori.mp3', label: 'Call of Silence' };
   const memoryTokens = new Map();
 
   async function call(method, url, body, token) {
@@ -19,10 +20,7 @@ export function createShiritori(ctx) {
     if (!res.ok) throw Object.assign(new Error(data.error || 'The game server did not respond. Check your connection.'), { status: res.status });
     return data;
   }
-  const theme = (ev) => {
-    setTheme(ev.theme);
-    setMusic(ev.theme.bgm, `${ev.theme.name} theme`, { src: `/media/${ev.realm}/realm.mp3`, label: `${realmName(ev.realm)} theme` });
-  };
+  const theme = (ev) => { setTheme(ev.theme); stopMusic(); };
   const rules = (ev) => `<ol class="shiri-rules">
     <li>Name an <b>anime character</b> or an <b>anime title</b> that starts with the <b>last letter</b> of the previous answer.</li>
     <li>Turns go round the room in join order. You get <b>${ev.timeLimit} seconds</b>.</li>
@@ -107,7 +105,7 @@ export function createShiritori(ctx) {
       if (!r.you) { stop(); dropToken(code); setup(ev, code); return; }
       if (r.status !== shown) { shown = r.status; ({ lobby: drawLobby, playing: drawGame, over: drawOver })[r.status](); }
       else if (changed) ({ lobby: fillLobby, playing: fillGame, over: () => {} })[r.status]();
-      if (r.status === 'playing') startClock();
+      if (r.status === 'playing') { startClock(); setMusic(GAME_TRACK.src, GAME_TRACK.label); } else stopMusic();
     }
     const gone = (m) => `<section class="panel result screen"><h1 class="display">This room has closed</h1><p class="muted">${esc(m)}</p>
       <a class="btn" href="#/event/${ev.id}"><span class="badge">${icon('wish')}</span>Back to Shiritori</a></section>`;
@@ -216,7 +214,7 @@ export function createShiritori(ctx) {
         <small>${esc(w.name)} · ${w.manual ? 'Host ruling' : w.kind === 'anime' ? 'Anime' : esc(w.anime || 'Character')}</small></li>`).join('');
       const ch = $('#choose');
       ch.hidden = !r.pending;
-      ch.innerHTML = r.pending ? `<p>Which one do you mean?</p>${r.pending.map((o) => `<button type="button" data-opt="${esc(o.id)}"><b>${esc(o.text)}</b><small>${o.kind === 'anime' ? 'Anime' : esc(o.anime || 'Character')}</small></button>`).join('')}` : '';
+      ch.innerHTML = r.pending ? `<p>Which one do you mean?</p>${r.pending.map((o) => `<button type="button" data-opt="${esc(o.id)}"><b>${esc(o.label || o.text)}</b><small>${o.kind === 'anime' ? 'Anime' : esc(o.anime || 'Character')}</small></button>`).join('')}` : '';
       ch.querySelectorAll('[data-opt]').forEach((b) => b.addEventListener('click', () => send('choose', { option: b.dataset.opt })));
     }
     // Count down locally from the server's "ms left", re-anchored on every poll.
@@ -277,7 +275,7 @@ export function createShiritori(ctx) {
     }
 
     function stop() { clearInterval(poll); poll = 0; }
-    setCleanup(() => { stop(); cancelAnimationFrame(frame); clearInterval(slowTick); document.getElementById('overlay').hidden = true; });
+    setCleanup(() => { stop(); stopMusic(); cancelAnimationFrame(frame); clearInterval(slowTick); document.getElementById('overlay').hidden = true; });
     app.innerHTML = '<section class="panel result screen"><p class="muted">Joining the room…</p></section>';
     call('GET', '/api/shiritori/info').then((i) => { hostOk = i.hostRuling; }).catch(() => {});
     refresh();

@@ -61,8 +61,10 @@ The server grades answers. The kiosk never receives the correct option.
 
 An Anime event where players name an anime character or anime title that starts with the last letter of the previous answer. Anyone creates a room and gets a 5-letter code; others join with it on their own phone or laptop. Everyone presses Ready, then the room host starts. Turns go round the room, and whoever runs out of time is out. The last player standing wins. Rooms live in server memory: all players must use the same address, and a restart clears games in progress.
 
-- **Referee:** the server (`server/shiritori/`). Answers are matched against `server/seed/shiritori.json`, an index of about 2,000 popular anime and 3,000 characters from AniList. There's no AI, and nothing is called over the network during play.
-- **Matching:** spelling, accents, long vowels (Rintarou = Rintaro), name order and small typos are all forgiven. The official spelling decides the next letter. When a name matches several entries ("Sakura"), the player picks from a list. Every season of an anime counts as the same answer.
+- **Referee:** the server (`server/shiritori/`). Answers are matched against `server/seed/shiritori.json`, an index of 5,000 anime and about 11,000 characters from AniList (the most-favourited characters plus the casts of the 600 most popular anime, including spoiler names). There's no AI, and nothing is called over the network during play.
+- **Matching:** spelling, accents, long vowels (Rintarou = Rintaro), romanization variants (tsu/tu, shi/si, Shimbun/Shinbun), name order, first or last name alone, and typos scaled to the name's length are all forgiven. Long titles typed from memory match word by word. The official spelling decides the next letter. When a name matches several entries ("Sakura"), the player picks from a list. Every season of an anime counts as the same answer.
 - **Unknown answers:** the player taps "Ask the host". The clock pauses, and the host accepts or rejects with `HOST_PIN` from `.env`.
 - **Scoring:** 100 points per word, plus 300 for the winner. Running out of time knocks you out, and the next player gets the same letter.
-- **Refreshing the index:** run `node scripts/build-shiritori-index.mjs` (about 5 minutes, because of AniList's rate limit), then restart the server.
+- **Refreshing the index:** run `node scripts/build-shiritori-index.mjs` (about 8 minutes, because of AniList's rate limit), then restart the server.
+- **Testing answers:** `node scripts/test-shiritori.mjs` plays 270 typical answers through the real referee and lists any that fail; add `-v` to see what each one resolved to.
+- **Music:** the site is silent except during a Shiritori game, which plays `public/media/anime/shiritori.mp3`.

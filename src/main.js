@@ -47,7 +47,7 @@ function setTheme({ scene, tint, bg, video }) {
 }
 const preload = (src, cb) => { const im = new Image(); im.onload = () => cb(src); im.src = src; };
 
-/* ---------- Music: one looping track per page, user can mute ---------- */
+/* ---------- Music: silent everywhere except a Shiritori game in progress (see shiritori.js) ---------- */
 const audio = document.getElementById('bgm'), nowPlaying = document.getElementById('now-playing'), musicBtn = document.getElementById('btn-music');
 let musicOn = true, trackLabel = '', fallback = null;
 // `alt` is tried when `src` is missing (an event without its own track uses its section's music).
@@ -63,11 +63,15 @@ audio.addEventListener('error', () => {
   nowPlaying.hidden = true;
   if (fallback) { const f = fallback; fallback = null; trackLabel = f.label; audio.setAttribute('src', f.src); if (musicOn) audio.play().catch(() => {}); }
 });
+function stopMusic() {
+  if (!audio.getAttribute('src')) return; // already silent; rooms call this on every refresh
+  fallback = null; audio.pause(); audio.removeAttribute('src'); audio.load(); nowPlaying.hidden = true;
+}
 musicBtn.addEventListener('click', () => {
   musicOn = !musicOn;
   musicBtn.setAttribute('aria-pressed', musicOn); musicBtn.setAttribute('aria-label', musicOn ? 'Turn music off' : 'Turn music on');
   musicBtn.innerHTML = icon(musicOn ? 'note' : 'mute');
-  if (musicOn) audio.play().catch(() => {}); else { audio.pause(); nowPlaying.hidden = true; }
+  if (musicOn && audio.getAttribute('src')) audio.play().catch(() => {}); else { audio.pause(); nowPlaying.hidden = true; }
 });
 
 
@@ -118,7 +122,7 @@ async function route() {
 function home() {
   session = null;
   setTheme(HOME_THEME);
-  setMusic(HOME_THEME.bgm, 'Main theme');
+  stopMusic();
   const title = 'AniMahou'.split('').map((c, i) => `<span class="letter gold-text" style="--i:${i}">${c}</span>`).join('');
   app.innerHTML = `
     <section class="home screen">
@@ -179,7 +183,7 @@ function realmPage(id) {
   const realm = realms.find((r) => r.id === id);
   if (!realm) return missing();
   setTheme({ scene: `realm-${realm.id}`, tint: realm.tint, video: `/media/${realm.id}/realm.mp4`, bg: `/media/${realm.id}/realm.jpg` });
-  setMusic(`/media/${realm.id}/realm.mp3`, `${realm.name} theme`);
+  stopMusic();
   const list = events.filter((e) => e.realm === id);
   app.innerHTML = `
     <section class="screen">
@@ -219,7 +223,7 @@ function eventPage(id) {
   if (!ev) return missing();
   if (ev.kind === 'shiritori') return shiritori.setup(ev);
   setTheme(ev.theme);
-  setMusic(ev.theme.bgm, `${ev.theme.name} theme`, { src: `/media/${ev.realm}/realm.mp3`, label: `${realms.find((r) => r.id === ev.realm)?.name || ''} theme` });
+  stopMusic();
   const realm = realms.find((r) => r.id === ev.realm);
   app.innerHTML = `
     <a class="btn btn-ghost btn-sm screen" href="#/realm/${realm.id}"><span class="badge">${icon('back')}</span>${esc(realm.name)} events</a>
@@ -275,7 +279,7 @@ function quiz(id) {
   if (!session || session.event.id !== id) { location.hash = `#/event/${id}`; return; }
   const { event: ev, questions: set, playId, player } = session;
   setTheme(ev.theme);
-  setMusic(ev.theme.bgm, `${ev.theme.name} theme`, { src: `/media/${ev.realm}/realm.mp3`, label: `${realms.find((r) => r.id === ev.realm)?.name || ''} theme` });
+  stopMusic();
   let i = 0, score = 0, timers = [], onKey = null, clip = null;
   const stop = () => { timers.forEach(clearInterval); timers = []; if (onKey) removeEventListener('keydown', onKey); onKey = null; clip?.pause(); };
   cleanup = stop;
@@ -423,7 +427,7 @@ function showChar() {
 
 /* ---------- Anime Shiritori (see shiritori.js) ---------- */
 const shiritori = createShiritori({
-  app, esc, icon, setTheme, setMusic, reduce,
+  app, esc, icon, setTheme, setMusic, stopMusic, reduce,
   realmName: (id) => realms.find((r) => r.id === id)?.name || '',
   setCleanup: (fn) => { cleanup = fn; },
 });
